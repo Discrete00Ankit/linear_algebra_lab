@@ -1,10 +1,10 @@
-# JupyterLite Core & Interfaces
-jupyterlite-core==0.8.0
-jupyterlite-pyodide-kernel==0.8.0
-jupyterlab~=4.6.0
-notebook~=7.6.0
-
-# Interactive Widgets & Visualizations for Linear Algebra
+voila>=0.5.8
 ipywidgets>=8.1.3,<9
-ipympl>=0.8.2
-plotly>=5.24.0,<7
+anywidget>=0.11.0
+numpy>=1.24.0
+scipy>=1.10.0
+sympy>=1.12.0
+matplotlib>=3.8.0
+plotly>=5.24.0
+librosa>=0.10.0
+soundfile>=0.12.0

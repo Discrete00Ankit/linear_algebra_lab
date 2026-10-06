@@ -5,3 +5,6 @@ __pycache__/
 dist/
 _output/
 .doit.db
+
+*.bak
+.DS_Store
