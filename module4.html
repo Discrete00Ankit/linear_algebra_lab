@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module 4: Gaussian Elimination &amp; Row Operations · M3 Interactive Lab</title>
+  <!-- KaTeX Typography (Global High-Speed CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="m4">
+
+  <div class="layout">
+    <!-- Sticky Table of Contents (Populated by core.js) -->
+    <aside class="toc" id="toc"></aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+
+      <!-- Module Hero -->
+      <header class="module-hero">
+        <span class="eyebrow">MODULE 04 · SYSTEMATIC MATRIX ALGORITHMS</span>
+        <h1>Gaussian Elimination &amp; Row Operations</h1>
+        <p>Transition from algebraic brute force to systematic matrix algorithms. Discover the geometry of elementary row operations, invariant solution sets, echelon form, and real-world network conservation laws.</p>
+        <div class="hero-goals">
+          <div>🎯 <b>The Need for Algorithms:</b> Why high school elimination fails for large systems and how systematic pivots scale at $O(n^3)$.</div>
+          <div>🎯 <b>Invariant Solution Space:</b> Why elementary row operations rotate equations while keeping the true intersection point strictly locked.</div>
+          <div>🎯 <b>The Complete Solver:</b> Mastering Forward Elimination on augmented matrix $[A \mid \mathbf{b}]$ followed by Back-Substitution.</div>
+        </div>
+      </header>
+
+      <!-- Section 1 -->
+      <section class="chapter" id="sec-1" data-title="Beyond Brute-Force &amp; Networks">
+        <h2><span class="num">1</span> Beyond Brute-Force: Systematic Algorithms &amp; Network Flow</h2>
+        <p>In elementary algebra, solving systems of linear equations relied primarily on substitution and ad-hoc variable elimination. While practical for $2 \times 2$ systems, brute-force substitution on an $n \times n$ system exhibits factorial complexity $O(n!)$, rendering it impossible for large engineering models. <b>Gaussian Elimination</b> transforms the problem into a systematic, predictable algorithm scaling in $O(n^3)$ operations.</p>
+
+        <div class="callout quote">
+          <div class="callout-title">Carl Friedrich Gauss (1777–1855)</div>
+          <p><i>"Mathematics is the queen of the sciences and number theory is the queen of mathematics."</i> — Gauss introduced systematic elimination to calculate the orbit of the asteroid Ceres from astronomical observation data.</p>
+        </div>
+
+        <p>Where do large linear systems come from in the real world? One of the most fundamental sources is <b>Conservation Laws</b> (Kirchhoff's Current Law in electrical circuits, mass conservation in chemical reactors, and traffic flow equilibrium in transportation grids).</p>
+
+        <div class="callout def">
+          <div class="callout-title">Kirchhoff's Flow Conservation Law</div>
+          <p>At every intersection node in a steady-state network:
+            $$\sum \text{Flow In} = \sum \text{Flow Out}$$
+            Traffic cannot vanish or spontaneously generate at an intersection.
+          </p>
+        </div>
+
+        <div class="callout ponder" data-ponder="m4-p1">
+          <div class="callout-title">🤔 Stop &amp; Ponder: Why do network systems naturally produce Free Variables?</div>
+          <p>Consider a traffic roundabout with 4 intersections and 4 internal connecting roads. If sensors only measure external inflows and outflows, can we determine every internal flow uniquely?</p>
+          <div class="reveal" data-label="See Flow Insight">
+            <div class="reveal-label">Degrees of Freedom &amp; Circulation Loops</div>
+            <p>If an internal closed loop exists, any volume of traffic $w$ can circulate continuously around the roundabout without altering external inputs or outputs. This circulating flow represents an unconstrained <b>free variable</b> ($x_3 = 200 - w$).</p>
+          </div>
+        </div>
+
+        <!-- Pre-Context for Lab 4.1 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore &amp; Predict Before Interacting (Notebook 2 Cell 6)</span>
+          </div>
+          <p>• <b>Predict:</b> If you increase the internal loop circulation $w$ from 0 to 100 vehicles/hour, will the total traffic entering or exiting the roundabout change?</p>
+          <p>• <b>Action:</b> Slide the free circulation parameter $w$. Watch how each road segment flow $x_1, x_2, x_3, x_4$ adjusts dynamically while strictly obeying $\sum \text{In} = \sum \text{Out}$ at every node.</p>
+        </div>
+
+        <!-- Interactive Lab 4.1 -->
+        <div id="lab-traffic-network"></div>
+
+        <!-- Post-Context for Lab 4.1 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Networks and Undetermined Systems:</b> Closed loops in network grids produce rank-deficient matrices with non-trivial null spaces. The loop traffic $w$ is a <b>free variable</b> that parameterizes an infinite family of valid flow solutions.</p>
+          <p>• <b>Conservation Constraint:</b> Regardless of $w$, the net balance across all outer boundaries is strictly conserved: $\sum \text{External In} = \sum \text{External Out}$.</p>
+        </div>
+      </section>
+
+      <!-- Section 2 -->
+      <section class="chapter" id="sec-2" data-title="Elementary Row Operations (EROs)">
+        <h2><span class="num">2</span> The Three Elementary Row Operations (EROs)</h2>
+        <p>Two systems of linear equations are called <b>row equivalent</b> if one can be transformed into the other via a sequence of elementary row operations. Crucially, row equivalent systems share the <b>exact same solution set</b>.</p>
+
+        <div class="callout theorem">
+          <div class="callout-title">Theorem 4.1: The Three Legal Row Operations</div>
+          <p>The following three operations preserve the solution set of any linear system:</p>
+          <ol>
+            <li><b>Row Swap ($R_i \longleftrightarrow R_j$):</b> Interchange two equations. (Reading clues in a different order).</li>
+            <li><b>Scalar Multiplication ($R_i \longleftarrow c R_i$, with $c \neq 0$):</b> Multiply an equation by a non-zero constant. (Converting units from meters to centimeters).</li>
+            <li><b>Row Replacement / Addition ($R_j \longleftarrow R_j - m R_i$):</b> Subtract a scalar multiple $m$ of row $i$ from row $j$. (Combining two clues to eliminate a variable).</li>
+          </ol>
+        </div>
+
+        <div class="callout alert">
+          <div class="callout-title">⚠️ Common Trap: Why $c \neq 0$ is Strictly Required</div>
+          <p>Multiplying a row by $c = 0$ collapses the equation to $0 = 0$, permanently destroying information. An operation is only valid if it is <b>reversible</b>; multiplying by zero cannot be inverted.</p>
+        </div>
+
+        <div class="callout ponder" data-ponder="m4-p2">
+          <div class="callout-title">🤔 Stop &amp; Ponder: The Pinned Rope Metaphor</div>
+          <p>Imagine two ropes crossing at a point $(x^*, y^*)$ and pinned to a wall with a thumb-tack. If you replace Rope 2 with a linear combination $\text{Rope 2} - m \cdot \text{Rope 1}$, what happens to the thumb-tack?</p>
+          <div class="reveal" data-label="See Geometric Answer">
+            <div class="reveal-label">The Invariant Center of Rotation</div>
+            <p>The thumb-tack cannot move! Because $(x^*, y^*)$ satisfies both equations, it satisfies any linear combination of them: $0 - m(0) = 0$. The operation rotates Rope 2 like a propeller around the fixed intersection point until it aligns horizontally!</p>
+          </div>
+        </div>
+
+        <!-- Pre-Context for Lab 4.2 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore &amp; Predict Before Interacting (Notebook 2 Cell 11)</span>
+          </div>
+          <p>• <b>Predict:</b> As you adjust the row multiplier $m$ from $-2$ to $+3$, what happens to the blue intersection point $(1, 2)$?</p>
+          <p>• <b>Action:</b> Slide multiplier $m$ to execute $R_2 \longleftarrow R_2 - m R_1$. Notice how the green rope line rotates like a propeller, while the pinned intersection point remains completely fixed.</p>
+        </div>
+
+        <!-- Interactive Lab 4.2 -->
+        <div id="lab-rope-physics"></div>
+
+        <!-- Post-Context for Lab 4.2 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>The Invariant Solution Center:</b> Elementary row operations do NOT alter the solution set. Because $(1, 2)$ satisfies both equations, it satisfies any linear combination $R_2 - m R_1$.</p>
+          <p>• <b>The Magic Multiplier ($m = 3$):</b> When $m = 3$, the $x$ term vanishes completely, rotating the second equation into the perfectly horizontal line $y = 2$! The variable $y$ is now decoupled and revealed instantly.</p>
+        </div>
+      </section>
+
+      <!-- Section 3 -->
+      <section class="chapter" id="sec-3" data-title="Forward Elimination &amp; Echelon Form">
+        <h2><span class="num">3</span> The Systematic Pivot Engine: Echelon Form $U$</h2>
+        <p>The goal of Gaussian Elimination is to convert a dense coefficient matrix $A$ into an <b>Upper Triangular Echelon Matrix $U$</b>, where all entries below the main diagonal are zero.</p>
+
+        <div class="callout def">
+          <div class="callout-title">Row Echelon Form (REF) Criteria</div>
+          <ol>
+            <li>All non-zero rows are strictly above any rows of all zeros.</li>
+            <li>Each leading entry of a row (called a <b>pivot</b>) is strictly to the right of the leading entry of the row above it.</li>
+            <li>All entries below each pivot in its column are zero.</li>
+          </ol>
+        </div>
+
+        <div class="callout tip">
+          <div class="callout-title">The Multiplier Formula</div>
+          <p>To eliminate the entry in row $j$, column $i$ using pivot row $i$:
+            $$m_{ji} = \frac{A_{ji}}{A_{ii}}$$
+            Then apply row operation: $R_j \longleftarrow R_j - m_{ji} R_i$. The entry $A_{ji}$ becomes exactly zero.
+          </p>
+        </div>
+
+        <!-- Pre-Context for Lab 4.3 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore &amp; Predict Before Interacting</span>
+          </div>
+          <p>• <b>Predict:</b> In what exact order must entries be eliminated to avoid destroying previously created zeros?</p>
+          <p>• <b>Action:</b> Step through the elimination pipeline using the Next Step button. Observe which row is chosen as the pivot row, how the multiplier $m_{ji}$ is computed, and how zeros propagate down the lower triangle.</p>
+        </div>
+
+        <!-- Interactive Lab 4.3 -->
+        <div id="lab-echelon-stepper"></div>
+
+        <!-- Post-Context for Lab 4.3 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Systematic Column-by-Column Sweeping:</b> We eliminate column 1 entries using Pivot 1 ($A_{11}$), then move to column 2 using Pivot 2 ($A_{22}$). Operating from top-to-bottom and left-to-right ensures created zeros are never overwritten.</p>
+          <p>• <b>Pivoting Rule:</b> If a pivot entry $A_{ii} = 0$, we cannot divide by zero to compute $m_{ji}$. We must perform a legal Row Swap ($R_i \longleftrightarrow R_k$) with a row below that has a non-zero entry in column $i$.</p>
+        </div>
+      </section>
+
+      <!-- Section 4 -->
+      <section class="chapter" id="sec-4" data-title="The Augmented Matrix &amp; Back-Substitution">
+        <h2><span class="num">4</span> Solving $A\mathbf{x} = \mathbf{b}$ via Augmented Matrix $[A \mid \mathbf{b}]$ &amp; Back-Substitution</h2>
+        <p>To solve an entire system, any row operation applied to the coefficients $A$ must also be applied to the constants vector $\mathbf{b}$. We concatenate them into the <b>Augmented Matrix</b> $[A \mid \mathbf{b}]$.</p>
+
+        <p>The solution algorithm proceeds in two crisp phases:</p>
+        <ol>
+          <li><b>Phase 1 (Forward Elimination):</b> Perform EROs to transform $[A \mid \mathbf{b}] \longrightarrow [U \mid \mathbf{c}]$, where $U$ is upper triangular.</li>
+          <li><b>Phase 2 (Back-Substitution):</b> Solve from bottom to top. The last equation yields $x_n = \frac{c_n}{u_{nn}}$, which is substituted upwards into row $n-1$, and so on.</li>
+        </ol>
+
+        <!-- Pre-Context for Lab 4.4 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore &amp; Predict Before Interacting (Notebook 2 Cell 16)</span>
+          </div>
+          <p>• <b>Predict:</b> How does the constant vector $\mathbf{b}$ change alongside matrix $A$ during row operations?</p>
+          <p>• <b>Action:</b> Input matrix coefficients or choose system presets. Watch the full augmented matrix $[A \mid \mathbf{b}]$ reduce to upper triangular form, followed by step-by-step back substitution solving for $z$, then $y$, then $x$.</p>
+        </div>
+
+        <!-- Interactive Lab 4.4 -->
+        <div id="lab-augmented-solver"></div>
+
+        <!-- Post-Context for Lab 4.4 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Computational Efficiency ($O(n^3)$ vs $O(n^2)$):</b> Forward elimination is the heavy computational lifter, taking $\sim \frac{2}{3}n^3$ arithmetic operations. Back-substitution is lightning fast, taking only $\sim n^2$ operations.</p>
+          <p>• <b>Augmented Consistency:</b> A row of zeros in $U$ corresponding to a non-zero entry in $\mathbf{c}$ ($[0\; 0\; 0 \mid c]$ with $c \ne 0$) immediately signals that $0 = c$, revealing an inconsistent system (No Solution).</p>
+        </div>
+
+        <!-- Pre-Context for Lab 4.5 -->
+        <div class="lab-context before" style="margin-top: 30px;">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 2D Geometric Elimination: Watch Variables Decouple (Notebook 2 Cell 18)</span>
+          </div>
+          <p>• <b>Observe:</b> In a 2D system, the first line is slanted. As elimination cancels the $x$ variable in equation 2, watch line 2 snap horizontally ($y = \text{constant}$).</p>
+        </div>
+
+        <!-- Interactive Lab 4.5 -->
+        <div id="lab-line-elimination"></div>
+
+        <!-- Post-Context for Lab 4.5 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Geometric Decoupling:</b> An equation with only one variable ($0x + dy = c$) is geometrically a line parallel to one of the coordinate axes. Forward elimination rotates oblique lines until they align with axis coordinates!</p>
+        </div>
+      </section>
+
+      <!-- Section 5 -->
+      <section class="chapter" id="sec-5" data-title="Python CodeLabs &amp; Challenges">
+        <h2><span class="num">5</span> Interactive Python CodeLabs</h2>
+        <p>Reinforce your understanding of Gaussian Elimination by writing the core matrix array operations in Python with NumPy.</p>
+
+        <!-- Pre-Context for CodeLab 1 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 CodeLab 1 Challenge: Augmented Matrix Construction</span>
+          </div>
+          <p>• Construct the augmented matrix $[A \mid \mathbf{b}]$ using NumPy's horizontal stacking function <code>np.hstack</code>.</p>
+        </div>
+
+        <!-- CodeLab 1 -->
+        <div id="lab-code-augmented"></div>
+
+        <!-- Post-Context for CodeLab 1 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Python Implementation Takeaway</span>
+          </div>
+          <p>• Remember that <code>b.reshape(-1, 1)</code> converts a 1D vector into a $3 \times 1$ column vector so its vertical dimension matches matrix $A$.</p>
+        </div>
+
+        <!-- Pre-Context for CodeLab 2 -->
+        <div class="lab-context before" style="margin-top: 30px;">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 CodeLab 2 Challenge: Elimination Step Implementation</span>
+          </div>
+          <p>• Write the NumPy row operation formula: calculate multiplier $m_{21} = A[1, 0] / A[0, 0]$ and perform row subtraction <code>A[1] = A[1] - m * A[0]</code>.</p>
+        </div>
+
+        <!-- CodeLab 2 -->
+        <div id="lab-code-elimination-step"></div>
+
+        <!-- Post-Context for CodeLab 2 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Python Implementation Takeaway</span>
+          </div>
+          <p>• NumPy's sliced row indexing allows whole-row vectorized operations: <code>A[1, :] -= m * A[0, :]</code> updates all columns simultaneously without manual loops.</p>
+        </div>
+      </section>
+
+      <!-- Section 6 -->
+      <section class="chapter" id="sec-6" data-title="Module 4 Mastery &amp; Assignments">
+        <h2><span class="num">6</span> Module 4 Conceptual Mastery &amp; Assignments</h2>
+        <p>Test your intuition on row operations, pivot mechanics, back-substitution, and invariant solution spaces.</p>
+
+        <!-- Self-Check Quiz -->
+        <div id="quiz-m4"></div>
+
+        <!-- Interactive Assignment MCQs -->
+        <div class="callout def" style="margin-top: 30px;">
+          <div class="callout-title">📝 Assignment Intuition &amp; Conceptual MCQs</div>
+          <p>Reinforce your mastery of systematic elimination with these conceptual questions directly from Lecture Notebook 2. Select your answer and get immediate feedback!</p>
+        </div>
+        <div id="assignment-quiz-m4"></div>
+
+        <!-- Pen & Paper Assignment Card -->
+        <div class="assign" style="margin-top: 30px;">
+          <h3>✍️ Pen-and-Paper Assignment &amp; Conceptual Analysis</h3>
+          <div class="q">
+            <h4>📝 Question 1: Forward Elimination &amp; Back-Substitution</h4>
+            <div class="given">
+              2x + y + z = 1<br>
+              4x + y = -2<br>
+              -2x + 2y + z = 7
+            </div>
+            <ul>
+              <li><b>Task 1:</b> Write the Augmented Matrix $[A \mid \mathbf{b}]$.</li>
+              <li><b>Task 2:</b> Compute the multipliers $m_{21}$ and $m_{31}$ to eliminate column 1 entries.</li>
+              <li><b>Task 3:</b> Reduce to Upper Triangular Form $[U \mid \mathbf{c}]$ and find the unique solution $[x, y, z]$ via back-substitution.</li>
+            </ul>
+          </div>
+          <div class="q">
+            <h4>📝 Question 2: Roundabout Traffic Network (Conservation Laws)</h4>
+            <p>Using Kirchhoff's flow conservation law $\sum \text{In} = \sum \text{Out}$ at each intersection, set up the matrix system for a 4-node roundabout. Show why the internal loop produces an undetermined system with a free variable $w$.</p>
+          </div>
+        </div>
+
+        <div class="end-badge">
+          <span>🎉 CONGRATULATIONS! MODULE 4 COMPLETED!</span>
+        </div>
+      </section>
+
+      <!-- Bottom Pager (Auto-populated by core.js) -->
+      <nav id="pager"></nav>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <script src="core.js"></script>
+  <script src="module4.js"></script>
+</body>
+</html>

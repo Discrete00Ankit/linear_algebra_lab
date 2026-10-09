@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module 6 · Linear Independence, Rank & Solvability | M3 Linear Algebra Lab</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+</head>
+<body data-page="m6">
+  <!-- Top Navigation Bar (Auto-populated by core.js) -->
+  <header class="topbar" id="topbar"></header>
+
+  <div class="layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <nav class="toc">
+        <div class="toc-title">Module 6 Outline</div>
+        <ul>
+          <li><a href="#hero">Overview</a></li>
+          <li><a href="#mission-control">1. Mission Control & 2D Vector Dials</a></li>
+          <li><a href="#devils-offer">2. Stop & Ponder: The Devil's Offer</a></li>
+          <li><a href="#vector-space-radar">3. 3D Vector Space Testing</a></li>
+          <li><a href="#dual-lenses">4. Two Lenses on Matrix Rank</a></li>
+          <li><a href="#augmented-solvability">5. Augmented Matrix Solvability $[A \mid \mathbf{b}]$</a></li>
+          <li><a href="#broken-controller">6. The Broken Controller 3D Game</a></li>
+          <li><a href="#codelab">7. NumPy Rank & Solvability CodeLab</a></li>
+          <li><a href="#mastery-quiz">8. Self-Check Mastery Quiz</a></li>
+          <li><a href="#assignment">9. Assignment: Solvability Analysis</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+      <!-- Hero Section -->
+      <section id="hero" class="hero-card">
+        <div class="hero-badge-row">
+          <span class="badge badge-blue">Module 6</span>
+          <span class="badge badge-teal">Lecture Sheet 3 (LA Notebook 2)</span>
+          <span class="badge badge-purple">Interactive Laboratory</span>
+        </div>
+        <h1>Linear Independence, Rank & Solvability</h1>
+        <p class="hero-subtitle">
+          Steering vector spaces, detecting redundant directions, and mastering the invariant rank test for $A\mathbf{x} = \mathbf{b}$.
+        </p>
+      </section>
+
+      <!-- Section 1: Mission Control 2D Dials -->
+      <section id="mission-control" class="card">
+        <h2>1. 🚀 Mission Control: Steering Space with Vector Engine Dials</h2>
+        <p>
+          Imagine you are piloting a deep-space scout craft in a flat 2D asteroid belt. Your ship cannot move freely on its own; 
+          instead, you steer exclusively using two fixed thrusters whose firing vectors are $\mathbf{v}_1$ and $\mathbf{v}_2$. 
+          The dial knobs $c_1$ and $c_2$ control how much thrust each engine applies:
+        </p>
+        $$\mathbf{r} = c_1 \mathbf{v}_1 + c_2 \mathbf{v}_2$$
+        <p>
+          Can you reach <em>any</em> emergency beacon in the galaxy? 
+          If $\mathbf{v}_1$ and $\mathbf{v}_2$ point in different, non-parallel directions, you have two genuinely independent degrees of freedom. 
+          Together, their linear combinations span the entire plane $\mathbb{R}^2$! But if $\mathbf{v}_2$ points along the exact same line as $\mathbf{v}_1$ 
+          (e.g., $\mathbf{v}_2 = 2\mathbf{v}_1$), your second engine is completely redundant. No matter how wildly you turn the dials, you remain helplessly trapped along a single 1D line!
+        </p>
+
+        <!-- Pre-widget callout -->
+        <div class="callout callout-explore">
+          <div class="callout-header">
+            <span class="callout-icon">🎯</span>
+            <strong>What to Explore & Predict Before Running</strong>
+          </div>
+          <p>
+            1. Select the <strong>Independent Thrusters</strong> configuration. Can you steer your ship to Beacon Alpha at $(3, 4)$? Notice how Dial 1 and Dial 2 combine head-to-tail.<br>
+            2. Switch to <strong>Collinear / Redundant Thrusters</strong>. What happens to the green target Beacon Alpha? Can any dial combination reach it?<br>
+            3. Select Beacon Beta $(6, 3)$ while in collinear mode. Why is this beacon reachable even though your thrusters are dependent?
+          </p>
+        </div>
+
+        <!-- Interactive Lab Mount -->
+        <div class="lab-container">
+          <div class="lab-header">
+            <h3>Interactive 2D Vector Dials Radar Simulator</h3>
+            <span class="badge badge-teal">Live Canvas Simulator</span>
+          </div>
+          <div id="lab-mission-control-2d"></div>
+        </div>
+
+        <!-- Post-widget callout -->
+        <div class="callout callout-takeaway">
+          <div class="callout-header">
+            <span class="callout-icon">💡</span>
+            <strong>Core Geometric & Algebraic Takeaway</strong>
+          </div>
+          <p>
+            Two vectors in $\mathbb{R}^2$ are <strong>linearly independent</strong> if neither is a scalar multiple of the other. 
+            When independent, their column matrix has full rank ($r = 2$), guaranteeing a unique dial solution $(c_1, c_2)$ for every possible target $\mathbf{b}$. 
+            When dependent, rank drops to $r = 1$, and only targets that happen to sit precisely on the 1D span line can ever be reached!
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 2: The Devil's Offer -->
+      <section id="devils-offer" class="card">
+        <h2>2. 😈 Stop & Ponder: "The Devil's Offer" & The Absolute Algebraic Test</h2>
+        <div class="callout callout-ponder" style="border-left: 6px solid #f59e0b; background: #fffbeb;">
+          <h3 style="color: #b45309; margin-top: 0;">The Devil's Challenge:</h3>
+          <p style="color: #92400e; font-size: 15px; line-height: 1.6;">
+            Suppose a mischievous mathematical devil approaches you with a bag of $k$ vectors $\{\mathbf{v}_1, \mathbf{v}_2, \dots, \mathbf{v}_k\}$ and makes you an offer:<br>
+            <em>"Can you find a recipe of dial weights $c_1, c_2, \dots, c_k$ — <strong>NOT all zero</strong> — that completely cancels out to the zero vector?"</em>
+          </p>
+          $$c_1 \mathbf{v}_1 + c_2 \mathbf{v}_2 + \dots + c_k \mathbf{v}_k = \mathbf{0}$$
+          <p style="color: #92400e; font-size: 14.5px; line-height: 1.6;">
+            If you can accept the Devil's offer, it means at least one non-zero coefficient exists (say $c_1 \ne 0$). 
+            You can algebraically isolate $\mathbf{v}_1$:
+          </p>
+          $$\mathbf{v}_1 = -\frac{c_2}{c_1}\mathbf{v}_2 - \frac{c_3}{c_1}\mathbf{v}_3 - \dots - \frac{c_k}{c_1}\mathbf{v}_k$$
+          <p style="color: #92400e; font-size: 14.5px; line-height: 1.6; margin-bottom: 0;">
+            This proves that $\mathbf{v}_1$ is completely redundant! It contributes nothing new to your reachable space. 
+            Therefore: <strong>Vectors are Linearly Independent if and only if the ONLY solution to $\sum c_i \mathbf{v}_i = \mathbf{0}$ is the trivial solution $c_1 = c_2 = \dots = c_k = 0$.</strong>
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 3: 3D Vector Space Radar -->
+      <section id="vector-space-radar" class="card">
+        <h2>3. 🧊 3D Vector Space Testing: Line vs. Flat Plane vs. Full 3D Space</h2>
+        <p>
+          In three-dimensional space $\mathbb{R}^3$, having three vectors $\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3$ does <em>not</em> guarantee that you can reach all of 3D space! 
+          The number of independent vectors dictates the true geometric dimension of your reachable world:
+        </p>
+
+        <!-- Pre-widget callout -->
+        <div class="callout callout-explore">
+          <div class="callout-header">
+            <span class="callout-icon">🎯</span>
+            <strong>What to Explore & Predict Before Running</strong>
+          </div>
+          <p>
+            1. <strong>Instance A (Rank 1):</strong> Notice how all 3 vectors point along the same straight line $[1, 2, 3]^T$. Adjust all three dials. Can you ever leave the line?<br>
+            2. <strong>Instance B (Rank 2):</strong> Here $\mathbf{v}_1$ and $\mathbf{v}_2$ span the flat $XY$ floor plane, and $\mathbf{v}_3 = \mathbf{v}_1 + \mathbf{v}_2$. Toggle between "Target on Floor" and "Target in Air". Why is the air target strictly impossible to reach?<br>
+            3. <strong>Instance C (Rank 3):</strong> Notice how the vectors point into three mutually distinct directions. You now possess full 3D autonomy!
+          </p>
+        </div>
+
+        <!-- Interactive Lab Mount -->
+        <div class="lab-container">
+          <div class="lab-header">
+            <h3>Interactive 3D Vector Independence Radar Engine</h3>
+            <span class="badge badge-purple">Plotly 3D WebGL</span>
+          </div>
+          <div id="lab-3d-space-radar"></div>
+        </div>
+
+        <!-- Post-widget callout -->
+        <div class="callout callout-takeaway">
+          <div class="callout-header">
+            <span class="callout-icon">💡</span>
+            <strong>Core Geometric & Algebraic Takeaway</strong>
+          </div>
+          <p>
+            The dimension of the subspace spanned by columns $\{\mathbf{v}_1, \dots, \mathbf{v}_n\}$ is precisely the number of linearly independent vectors. 
+            Three 3D vectors can span a 1D line (Rank 1), a 2D plane (Rank 2), or all of 3D space (Rank 3). Redundant vectors never add volume or dimension!
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 4: Dual Lenses on Matrix Rank -->
+      <section id="dual-lenses" class="card">
+        <h2>4. ⚖️ Two Ways to View Matrix Rank (The Core Invariant)</h2>
+        <p>
+          Matrix Rank is one of the most vital concepts in all of linear mathematics. It can be viewed through two completely different perspectives that always produce the exact same integer:
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0;">
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; padding: 16px; border-radius: 8px;">
+            <h4 style="color: #1e40af; margin-top: 0; margin-bottom: 8px;">Lens 1: The Algorithmic Pivot Engine</h4>
+            <p style="color: #1e3a8a; font-size: 14px; margin: 0; line-height: 1.5;">
+              Perform Gaussian elimination on matrix $A$ to transform it into Row Echelon Form (REF). 
+              Count the number of non-zero rows containing leading pivots.<br><br>
+              <strong>Rank = Number of Leading Pivots.</strong>
+            </p>
+          </div>
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #16a34a; padding: 16px; border-radius: 8px;">
+            <h4 style="color: #15803d; margin-top: 0; margin-bottom: 8px;">Lens 2: Geometric Column Space Dimension</h4>
+            <p style="color: #166534; font-size: 14px; margin: 0; line-height: 1.5;">
+              Look at the columns of $A$ as displacement vectors. 
+              Find the maximum number of linearly independent columns that form a basis for $C(A)$.<br><br>
+              <strong>Rank = $\dim(C(A))$ (Reachable Dimension).</strong>
+            </p>
+          </div>
+        </div>
+        <p>
+          <strong>The Great Invariant:</strong> For any $m \times n$ matrix $A$, the row rank always equals the column rank:
+        </p>
+        $$\text{Row Rank}(A) = \text{Column Rank}(A) = \text{Rank}(A) \le \min(m, n)$$
+      </section>
+
+      <!-- Section 5: Augmented Matrix Solvability -->
+      <section id="augmented-solvability" class="card">
+        <h2>5. 🧪 Testing Solvability with the Augmented Matrix $[A \mid \mathbf{b}]$</h2>
+        <p>
+          To test whether an arbitrary target $\mathbf{b}$ is reachable without tedious trial and error, we construct the 
+          <strong>Augmented Matrix $[A \mid \mathbf{b}]$</strong> and compare ranks:
+        </p>
+        <div class="callout callout-info" style="border-left: 5px solid #2563eb; background: #f8fafc; padding: 16px; border-radius: 8px;">
+          <h4 style="color: #1e40af; margin-top: 0; margin-bottom: 6px;">The Fundamental Solvability Criterion:</h4>
+          <p style="color: #1e293b; margin: 0; font-size: 14.5px; line-height: 1.6;">
+            A linear system $A\mathbf{x} = \mathbf{b}$ has at least one valid solution if and only if $\mathbf{b} \in C(A)$, which occurs if and only if:
+            $$\mathbf{\text{Rank}(A) = \text{Rank}([A \mid \mathbf{b}])}$$
+          </p>
+        </div>
+
+        <!-- Pre-widget callout -->
+        <div class="callout callout-explore">
+          <div class="callout-header">
+            <span class="callout-icon">🎯</span>
+            <strong>What to Explore & Predict Before Running</strong>
+          </div>
+          <p>
+            1. <strong>Case 1 (Inconsistent):</strong> Notice how row reduction produces $[0, 0 \mid 2]$. The augmented matrix gains a pivot in the constants column! Why does $\text{Rank}([A \mid \mathbf{b}]) = 2 > \text{Rank}(A) = 1$ mean $0 = 2$?<br>
+            2. <strong>Case 2 (Unique Solution):</strong> Both $A$ and $[A \mid \mathbf{b}]$ have rank 2, equal to the number of variables $n = 2$.<br>
+            3. <strong>Case 3 (Infinitely Many):</strong> Both ranks are 1, but smaller than $n = 2$. What is the free variable?
+          </p>
+        </div>
+
+        <!-- Interactive Lab Mount -->
+        <div class="lab-container">
+          <div class="lab-header">
+            <h3>Augmented Matrix Rank Solvability Inspector</h3>
+            <span class="badge badge-blue">Interactive REF Analyzer</span>
+          </div>
+          <div id="lab-augmented-rank-tester"></div>
+        </div>
+
+        <!-- Post-widget callout -->
+        <div class="callout callout-takeaway">
+          <div class="callout-header">
+            <span class="callout-icon">💡</span>
+            <strong>Core Geometric & Algebraic Takeaway</strong>
+          </div>
+          <p>
+            Adding column $\mathbf{b}$ to matrix $A$ can <em>never</em> decrease rank. It can either leave the rank unchanged (meaning $\mathbf{b}$ was already inside the column space span, so a solution exists), or increase the rank by 1 (meaning $\mathbf{b}$ points outside into an unreachable dimension, causing contradiction $0 = c$).
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 6: Broken Controller Game -->
+      <section id="broken-controller" class="card">
+        <h2>6. 🎮 The Broken Controller Game: Can You Reach the Target?</h2>
+        <p>
+          Imagine playing a video game in a 3D room. However, your controller is damaged—only <strong>2 buttons</strong> still work! 
+          The movement matrix $A$ represents what each button physically does to your character's position:
+        </p>
+        $$A = \begin{bmatrix} 1 & 0 \\ 0 & 1 \\ 0 & 0 \end{bmatrix} \quad 
+        \begin{aligned} 
+        &\text{Button 1: Moves 1 unit East (along X)} \\ 
+        &\text{Button 2: Moves 1 unit North (along Y)} \\ 
+        &\text{Z Button: BROKEN! Cannot move Up or Down} 
+        \end{aligned}$$
+        <p>
+          Your reachable column space $C(A)$ is the flat floor $Z = 0$. 
+          If a golden trophy orb $\mathbf{b} = [3, 4, 3]^T$ is floating 3 meters in the air, can any sequence of button presses collect it?
+        </p>
+
+        <!-- Pre-widget callout -->
+        <div class="callout callout-explore">
+          <div class="callout-header">
+            <span class="callout-icon">🎯</span>
+            <strong>What to Explore & Predict Before Running</strong>
+          </div>
+          <p>
+            1. Select the <strong>Floating Orb [3, 4, 3]</strong>. Use the button press sliders $x_1$ and $x_2$ to move your player directly underneath the orb.<br>
+            2. Click <strong>Snap Character to Closest Position (Projection)</strong>. Notice that even at your closest position, there is still a vertical gap $\Delta z = 3.0$.<br>
+            3. Switch to <strong>Ground Target [3, 4, 0]</strong>. Can you hit the target now? Notice what happened to $\text{Rank}([A \mid \mathbf{b}])$!
+          </p>
+        </div>
+
+        <!-- Interactive Lab Mount -->
+        <div class="lab-container">
+          <div class="lab-header">
+            <h3>3D Subspace Lock Game: Column Space & Reachability</h3>
+            <span class="badge badge-purple">3D Interactive Gamified Lab</span>
+          </div>
+          <div id="lab-subspace-lock-game"></div>
+        </div>
+
+        <!-- Post-widget callout -->
+        <div class="callout callout-takeaway">
+          <div class="callout-header">
+            <span class="callout-icon">💡</span>
+            <strong>Core Geometric & Algebraic Takeaway</strong>
+          </div>
+          <p>
+            A target vector $\mathbf{b}$ can only be reached if it lies inside the column space $C(A)$. 
+            When $\mathbf{b} \notin C(A)$, the vertical gap vector $\mathbf{b} - \hat{\mathbf{b}}$ is perpendicular to the entire subspace plane, and the system $A\mathbf{x} = \mathbf{b}$ has zero solutions.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 7: Python CodeLab -->
+      <section id="codelab" class="card">
+        <h2>7. 🐍 Interactive Python CodeLab: NumPy Matrix Rank & Solvability</h2>
+        <p>
+          In computational linear algebra and data science, we evaluate matrix rank and check solvability using 
+          <code>np.linalg.matrix_rank()</code> and <code>np.column_stack()</code>:
+        </p>
+
+        <!-- Interactive Lab Mount -->
+        <div class="lab-container">
+          <div class="lab-header">
+            <h3>NumPy: Automated Solvability Test via matrix_rank()</h3>
+            <span class="badge badge-teal">Live Interactive CodeLab</span>
+          </div>
+          <div id="lab-code-rank"></div>
+        </div>
+      </section>
+
+      <!-- Section 8: Self-Check Mastery Quiz -->
+      <section id="mastery-quiz" class="card">
+        <h2>8. 🧠 Self-Check Mastery Quiz: Independence & Rank</h2>
+        <p>Test your conceptual understanding before tackling the pen-and-paper assignment problems below:</p>
+        <div id="quiz-m6"></div>
+      </section>
+
+      <!-- Section 9: Assignment Conceptual MCQs -->
+      <section id="assignment" class="card">
+        <h2>9. ✍️ Module 6 Conceptual Assignment: Solvability & Dimensionality Analysis</h2>
+        <p>
+          The following problems mirror the core pen-and-paper problems from Lecture Sheet 3. 
+          Analyze the augmented matrices and select the correct conclusions:
+        </p>
+        <div id="assignment-quiz-m6"></div>
+      </section>
+
+      <!-- Bottom Pager (Auto-populated by core.js) -->
+      <nav id="pager"></nav>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    Newton School of Technology · Course in Linear Algebra (Mathematics-3) · Interactive Companion Laboratory
+  </footer>
+
+  <!-- Scripts -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <script src="core.js"></script>
+  <script src="module6.js"></script>
+</body>
+</html>

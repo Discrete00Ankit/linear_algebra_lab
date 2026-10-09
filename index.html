@@ -1,2644 +1,415 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Linear Algebra Laboratory | Newton School of Technology</title>
-  <meta name="description" content="Comprehensive interactive linear algebra course laboratory with 20+ real-time geometric simulations, 3D WebGL visualizations, acoustic wave superposition, and theory.">
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- MathJax 3 for LaTeX Rendering -->
-  <script>
-    window.MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$'], ['\\[', '\\]']],
-        processEscapes: true
-      },
-      options: {
-        ignoreHtmlClass: 'tex2jax_ignore',
-        processHtmlClass: 'tex2jax_process'
-      }
-    };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-
-  <!-- Plotly.js for 3D Intersections & Spans -->
-  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-
-  <!-- Custom Stylesheet -->
+  <title>Linear Algebra Laboratory &amp; Interactive Platform · Newton School of Technology</title>
+  <meta name="description" content="State-of-the-art interactive Linear Algebra laboratory companion with 35+ real-time geometric simulations, 3D WebGL visualizations, and conceptual challenges.">
+  <!-- KaTeX Typography (Global High-Speed CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Home Portal Specific Layout & Cards */
+    .portal-hero {
+      padding: 48px 36px 40px;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+      border-radius: 20px;
+      color: #fff;
+      margin-bottom: 36px;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .portal-hero::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .portal-hero .eyebrow {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(165, 180, 252, 0.3);
+      padding: 5px 12px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+    .portal-hero h1 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin: 0 0 14px;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+    .portal-hero p {
+      font-size: 1.12rem;
+      line-height: 1.65;
+      color: #cbd5e1;
+      max-width: 820px;
+      margin: 0 0 24px;
+    }
+    .hero-btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .hero-btn-primary {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #fff;
+      font-weight: 700;
+      padding: 12px 22px;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+    }
+    .hero-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.5);
+    }
+    .hero-btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #f8fafc;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.2s ease;
+    }
+    .hero-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Modules Grid */
+    .modules-portal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 22px;
+      margin-bottom: 40px;
+    }
+    .module-card-item {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      position: relative;
+    }
+    .module-card-item:hover {
+      transform: translateY(-3px);
+      border-color: #a5b4fc;
+      box-shadow: 0 8px 24px rgba(79, 70, 229, 0.1);
+    }
+    .module-card-item .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .module-num-badge {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      border: 1px solid #c7d2fe;
+    }
+    .module-icon-box {
+      font-size: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+    .module-card-item h3 {
+      font-size: 1.28rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 8px;
+    }
+    .module-card-item p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin: 0 0 16px;
+      flex-grow: 1;
+    }
+    .module-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .module-card-tags span {
+      font-size: 11.5px;
+      background: #f1f5f9;
+      color: #334155;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .launch-module-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      background: #f8fafc;
+      color: var(--brand);
+      border: 1px solid #c7d2fe;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13.5px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .launch-module-btn:hover {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+
+    /* Pillars Section */
+    .platform-pillars {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .pillar-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .pillar-card h4 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pillar-card p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+  </style>
 </head>
-<body>
+<body data-page="home">
 
-  <!-- Top Glassmorphism Navigation Bar -->
-  <header class="top-navbar">
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <button class="menu-toggle-btn" id="menu-toggle-btn" aria-label="Toggle navigation">☰</button>
-      <a href="#" class="brand-wrapper">
-        <div class="brand-logo-badge">NST</div>
-        <div class="brand-text">
-          <h1>Linear Algebra Lab</h1>
-          <p>Newton School of Technology • Batch 2026–27</p>
+  <div class="layout">
+    <!-- Sticky Table of Contents (Auto-populated by core.js) -->
+    <aside class="toc" id="toc"></aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+
+      <!-- Course Homepage Hero -->
+      <section class="portal-hero">
+        <span class="eyebrow">NEWTON SCHOOL OF TECHNOLOGY · MATHEMATICS-3</span>
+        <h1>Linear Algebra Laboratory</h1>
+        <p>An interactive courseware companion transforming abstract matrix algebra into visual, simulated laboratory experiences. Developed for computer science students to build strong geometric intuition and master computational linear algebra.</p>
+        <div class="hero-btn-row">
+          <a href="module1.html" class="hero-btn-primary">Start with Module 1 →</a>
+          <a href="notebook.html" class="hero-btn-secondary">🪐 Open Full Notebook View</a>
+          <a href="#curriculum" class="hero-btn-secondary">🧭 Explore Curriculum Roadmap</a>
         </div>
-      </a>
-    </div>
+      </section>
 
-    <nav class="nav-module-pills">
-      <button class="module-pill-btn active" data-target="all">All Lectures</button>
-      <button class="module-pill-btn" data-target="module-1">Module 1: Linear Geometry</button>
-      <button class="module-pill-btn" data-target="module-2">Module 2: Matrices & Analogies</button>
-      <button class="module-pill-btn" data-target="module-3">Module 3: Vector Spaces</button>
-      <button class="module-pill-btn" data-target="module-exercises">Exercises</button>
-    </nav>
+      <!-- Pedagogical Pillars -->
+      <section class="platform-pillars">
+        <div class="pillar-card">
+          <h4>🎨 Geometric Intuition</h4>
+          <p>Every single algebraic concept is paired with an interactive 2D canvas or 3D WebGL visualizer inspired by 3Blue1Brown.</p>
+        </div>
+        <div class="pillar-card">
+          <h4>🎯 Guided Scaffolding</h4>
+          <p>Explicit "What to Explore Before" and "Core Takeaways After" callouts for all 35+ simulations guarantee purposeful learning.</p>
+        </div>
+        <div class="pillar-card">
+          <h4>🎮 Gamified Mastery</h4>
+          <p>Interactive games like the Vector Dials Radar, The Broken Controller, and The Matrix Codebreaker test real understanding.</p>
+        </div>
+        <div class="pillar-card">
+          <h4>⚡ Zero Installation</h4>
+          <p>Runs 100% client-side in your web browser. No cloud servers, no installation hurdles, and zero timeout limitations.</p>
+        </div>
+      </section>
 
-    <div class="header-actions">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="lab-search-input" placeholder="Search concepts, formulas...">
-      </div>
-      <button class="icon-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme">☀️</button>
-    </div>
-  </header>
+      <!-- Curriculum Modules Roadmap -->
+      <section class="chapter" id="curriculum" data-title="Courseware Curriculum">
+        <h2><span class="num">📚</span> Interactive Courseware Curriculum (Modules 1–6)</h2>
+        <p>Select any module below to launch its interactive simulation suite and assignment challenges:</p>
 
-  <div class="app-layout">
-    <!-- Sidebar Table of Contents -->
-    <aside class="sidebar-toc" id="sidebar-toc">
-      <div class="toc-header">
-        <h3>Course Syllabus</h3>
-        <span style="font-size: 0.75rem; color: var(--accent-primary); font-weight: 700;">LIVE INTERACTIVE</span>
-      </div>
-      <div class="reading-progress-wrap">
-        <div class="reading-progress-bar" id="reading-progress"></div>
-      </div>
-      <ul class="toc-nav-list">
-        <li class="toc-group-title">MODULE 1: LINEAR GEOMETRY</li>
-        <li class="toc-nav-item"><a href="#sec-0">Welcome & Course Overview</a></li>
-        <li class="toc-nav-item"><a href="#sec-5">Points, Lines & Planes</a></li>
-        <li class="toc-nav-item"><a href="#sim-curve">Linearity Explorer <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sec-11">2D Linear Systems</a></li>
-        <li class="toc-nav-item"><a href="#sim-line-solver">2D Dual-View Solver <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-trichotomy">2D Trichotomy Classifier <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-3d-scenarios">3D Planes (6 Scenarios) <span class="sim-tag-badge">3D</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-3d-custom-solver">3D Custom Solver <span class="sim-tag-badge">3D</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-row-column">Row vs. Column Picture <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-column-explorer">Column Linear Combination <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#ex-module-1">Module 1 Exercise</a></li>
+        <div class="modules-portal-grid">
 
-        <li class="toc-group-title">MODULE 2: MATRIX MULTIPLICATION</li>
-        <li class="toc-nav-item"><a href="#sec-37">Matrix-Vector Products</a></li>
-        <li class="toc-nav-item"><a href="#sim-rgb-studio">RGB Light Studio (ℝ³) <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-audio-mixer">Acoustic Wave Superposition <span class="sim-tag-badge">AUDIO</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-matrix-dimensions">Dimension Compatibility <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-chai-kitchen">Chai Kitchen Recipe Mixer <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-image-transform">Image Transformations (Letter F) <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-canteen-menu">Canteen Menu Matrix <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-light-blending">Light Palette Blending <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-pixel-shifter">8×8 Matrix Pixel Shifter <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#ex-module-2a">Module 2 Exercises</a></li>
-
-        <li class="toc-group-title">MODULE 3: VECTOR SPACES & SPANS</li>
-        <li class="toc-nav-item"><a href="#sec-66">Vector Foundations & Rn</a></li>
-        <li class="toc-nav-item"><a href="#sim-vector-2d">2D Vector Canvas <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-vector-add">Vector Addition Geometry <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-axiom-tester">Vector Space Axioms <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-span-2d">2D Span Synthesizer <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-span-3d">3D Subspace Span Explorer <span class="sim-tag-badge">3D</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-column-recon">Target Reconstructor <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-5x5-system">5×5 System Breakdown <span class="sim-tag-badge">SIM</span></a></li>
-        <li class="toc-nav-item"><a href="#sim-detective-game">Subspace Span Detective <span class="sim-tag-badge">GAME</span></a></li>
-        <li class="toc-nav-item"><a href="#ex-module-3a">Module 3 Exercises</a></li>
-      </ul>
-    </aside>
-
-    <!-- Main Course Content -->
-    <main class="main-content">
-      <div class="content-inner">
-        <!-- Hero Introduction Card -->
-        <div class="hero-card">
-          <div class="hero-badge">OFFICIAL COURSE WORKBOOK • NST 2026–27</div>
-          <h2 class="hero-title">Interactive Linear Algebra Laboratory</h2>
-          <p class="hero-desc">Welcome to the complete, zero-server client-side interactive edition of your Linear Algebra course. Every theoretical definition, geometric intuition, and real-time visualization from your lecture sheets has been transformed into interactive simulations running natively in your browser.</p>
-          <div class="hero-features">
-            <span class="hero-chip">⚡ 100% Client-Side Pure JS</span>
-            <span class="hero-chip">📐 Real-Time WebGL & Canvas</span>
-            <span class="hero-chip">🎵 Web Audio Signal Superposition</span>
-            <span class="hero-chip">🎓 20+ Interactive Simulations</span>
-            <span class="hero-chip">♾️ Unlimited Free Access</span>
+          <!-- Module 1 -->
+          <div class="module-card-item">
+            <div class="card-top">
+              <span class="module-num-badge">MODULE 01</span>
+              <div class="module-icon-box">📐</div>
+            </div>
+            <h3>System of Linear Equations</h3>
+            <p>From points, lines, and planes to the geometry of linear constraints in $\mathbb{R}^2$ and $\mathbb{R}^3$. Discover the Trichotomy Theorem and the Row vs. Column dual picture.</p>
+            <div class="module-card-tags">
+              <span>2D/3D Systems</span>
+              <span>Plane Intersections</span>
+              <span>Solution Trichotomy</span>
+              <span>Row vs Column</span>
+            </div>
+            <a href="module1.html" class="launch-module-btn">
+              <span>Launch Module 1 Labs</span>
+              <span>→</span>
+            </a>
           </div>
-        </div>
 
-        <!-- Rendered Notebook Modules -->
-        <section id="module-1" class="lecture-module-section">
-<div class="theory-block" id="sec-0">
-<div style="background-color: #f8fafc; border-top: 6px solid #0284c7; border-bottom: 6px solid #0284c7; padding: 25px 20px; border-radius: 8px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin: 15px 0;">
-<span style="background-color: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
-Newton School of Technology
-</span>
-<h1 style="color: #0f172a; font-size: 30px; font-weight: 800; margin-top: 10px; margin-bottom: 6px;">
-WELCOME BATCH OF 2026–27
-</h1>
-</div>
-</div>
-<div class="theory-block" id="sec-1">
-<p>Welcome to your first lecture module in Linear Algebra. Today, we bridge the gap between pure algebraic notation and geometry. As computer science students, training your mind to instantly "see" the geometric shape behind a set of numbers is the secret to understanding graphics, computer vision, and machine learning models.</p>
-</div>
-<div class="theory-block" id="sec-2">
-<div align="center">
-<img 
-src="https://i.ibb.co/d3bTJVS/Gemini-Generated-Image-fyzdxzfyzdxzfyzd.png"
-         alt="Welcome to Linear Algebra" 
-         width="85%" 
-         style="border-radius: 10px; margin-bottom: 20px;">
-</div>
-</div>
-<div class="theory-block" id="sec-4">
-<p><br></p>
-<div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 20px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-<h1 style="color: white; margin: 0; font-size: 28px;">MODULE 1: System of Linear Equations</h1>
-</div>
-<hr style="height: 3px; background-color: #2a5298; border: none; margin-top: 15px; margin-bottom: 30px;">
-</div>
-<div class="theory-block" id="sec-5">
-<p><strong>What is a Point?</strong></p>
-<p>In $\mathbb{R}^n$, a point is an exact location in space, completely devoid of size, width, or depth. Computationally, it is an ordered list of coordinates like $(x, y)$ that points to a singular, specific position relative to an origin.</p>
-</div>
-<div class="theory-block" id="sec-6">
-<p><strong>What is a Line?</strong></p>
-<p>A line is a 1D continuous set of points extending infinitely in two opposite directions. It possesses length but zero width.</p>
-</div>
-<div class="theory-block" id="sec-7">
-<p><strong>What is a Plane?</strong> </p>
-<p>A plane is a flat, 2D surface that extends infinitely far in all directions. It has length and width, but zero thickness.</p>
-</div>
-<div class="theory-block" id="sec-8">
-<p><strong>Linear Equation in Two Variables</strong></p>
-<p>A linear equation in two variables $x$ and $y$ is an algebraic equation that can be written in the standard form: $$ax + by = c$$</p>
-<p>Where:
-$x$ and $y$ are the unknown variables (indeterminates).
-$a$, $b$, and $c$ are real constant numbers ($\in \mathbb{R}$).
-$a$ and $b$ are not both zero.</p>
-</div>
-<div class="theory-block" id="sec-9">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 16px 20px; border-radius: 8px; margin: 15px 0;">
-<h3 style="margin: 0 0 10px 0; color: #1E293B; font-size: 18px;">What Makes an Equation 'Linear'?</h3>
-<p style="margin: 0 0 8px 0; font-size: 14.5px; color: #334155; line-height: 1.6;">
-What does the following equation represent geometrically?
-</p>
-<p style="text-align: center; font-size: 17px; font-weight: bold; margin: 10px 0; color: #0F172A;">
-        $$x + y = 2$$
-</p>
-<p style="margin: 0; font-size: 14.5px; color: #334155; line-height: 1.6;">
-In mathematics, an equation of this form is called a <b>linear equation in 2 variables</b>.
-</p>
-</div>
-
-<div style="background-color: #FEFCE8; border: 1px solid #FEF08A; border-left: 6px solid #CA8A04; padding: 14px 18px; border-radius: 6px; margin: 15px 0;">
-<b style="color: #854D0E; font-size: 15px;">🤔 Stop & Ponder</b><br>
-<p style="margin: 6px 0 0 0; color: #713F12; font-size: 14px; line-height: 1.5;">
-<b>Why is the above equation called a linear equation?</b><br>
-<i>(Hint: Try to compare the uniformity of values of $y$ after uniform changes in values of $x$. The slope $\frac{\Delta y}{\Delta x} = -1$ is invariant everywhere.)</i><br><br>
-<b>Is $\sin(x) + \sin(y) = 1$ a linear equation?</b> Justify your answer.
-</p>
-</div>
-
-<div style="background-color: #F0FDF4; border: 1px solid #BBF7D0; border-left: 6px solid #16A34A; padding: 14px 18px; border-radius: 6px; margin: 15px 0;">
-<b style="color: #15803D; font-size: 15px;">🐍 Python Simulation: Testing Linearity and Uniform Rate of Change</b><br>
-<p style="margin: 6px 0 0 0; color: #166534; font-size: 14px; line-height: 1.5;">
-Select the equation below and adjust the step size $\Delta x$. Notice how uniform steps along $x$ produce strictly equal steps along $y$ for the linear equation, whereas the rate of change fluctuates continuously for the non-linear curve.
-</p>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-curve">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">📈</div>
-      <div class="sim-title-group">
-        <h3>Linearity vs Non-Linearity Explorer</h3>
-        <p>Observe how linear lines x + y = c maintain constant flatness while non-linear equations sin(x) + sin(y) = c generate complex ripples</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE SIMULATION</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row">
-      <div class="slider-control-group">
-        <div class="slider-label-row">
-          <label for="curve-c-slider">Constant Value (c):</label>
-          <span class="slider-val-readout" id="curve-c-val">1.00</span>
-        </div>
-        <input type="range" id="curve-c-slider" min="-1.8" max="1.8" step="0.05" value="1.0" class="sim-slider">
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="curve-canvas" height="380" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="curve-status">
-    <span>Adjust slider c to compare straight lines with non-linear sinusoidal contour rings.</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-11">
-<h2>System of Linear Equations in 2 Variables</h2>
-<p>A system of linear equations (or a linear system) is a collection of two or more linear equations involving the same set of variables.
-A standard $2 \times 2$ system (two equations, two variables) looks like this:
-$$\begin{aligned}
-a_1x + b_1y &amp;= c_1 \
-a_2x + b_2y &amp;= c_2
-\end{aligned}$$
-Where $a_1, b_1, c_1, a_2, b_2, c_2$ are real constants and $x, y$ are the variables.</p>
-</div>
-<div class="theory-block" id="sec-12">
-<p><strong>Solution of a System</strong></p>
-<p>A solution to a linear system is an ordered pair $(x, y)$ that satisfies every single equation in the system at the same time.</p>
-</div>
-<div class="theory-block" id="sec-13">
-<div style="background-color: #fffde7; border-left: 6px solid #fbc02d; padding: 15px; border-radius: 4px; margin-bottom: 10px;">
-<h4 style="color: #fbc02d; margin-top: 0;">🤔 Stop & Ponder</h4>
-Question: What are the different kinds of solutions that we have for a system of linear equations in two variables.
-</div>
-</div>
-<div class="theory-block" id="sec-14">
-<div style="background-color: #f0fdf4; border-left: 6px solid #16a34a; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin: 15px 0;">
-<div style="display: flex; align-items: center; margin-bottom: 10px;">
-<span style="font-size: 20px; margin-right: 8px;">🐍</span>
-<h3 style="color: #15803d; margin: 0; font-family: 'Segoe UI', sans-serif; font-weight: 700;">
-            Python Code: Solving a $2 \times 2$ System of Linear Equations
-</h3>
-</div>
-<p style="color: #166534; font-family: 'Segoe UI', sans-serif; font-size: 14px; margin-top: 0; margin-bottom: 12px;">
-Run the Python snippet in the code cell below to solve the system of equations $x + y = 3$ and $x - y = 1$ and plot their intersection point.
-</p>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-line-solver">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">📐</div>
-      <div class="sim-title-group">
-        <h3>2D Dual-View Line Solver</h3>
-        <p>Interactive Cartesian intersection of two linear equations: a₁x + b₁y = c₁ and a₂x + b₂y = c₂</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE SIMULATION</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 12px;">
-      <div class="number-input-group"><label>Line 1: a₁</label><input type="number" id="l1-a" value="1" step="0.5"></div>
-      <div class="number-input-group"><label>b₁</label><input type="number" id="l1-b" value="2" step="0.5"></div>
-      <div class="number-input-group"><label>c₁</label><input type="number" id="l1-c" value="3" step="0.5"></div>
-      <div style="border-left: 1px solid var(--bg-card-border); margin: 0 4px;"></div>
-      <div class="number-input-group"><label>Line 2: a₂</label><input type="number" id="l2-a" value="4" step="0.5"></div>
-      <div class="number-input-group"><label>b₂</label><input type="number" id="l2-b" value="5" step="0.5"></div>
-      <div class="number-input-group"><label>c₂</label><input type="number" id="l2-c" value="6" step="0.5"></div>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="line-solver-canvas" height="380" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="line-solver-status">
-    <span>Computing intersection and determinant...</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-16">
-<div style="background-color: #eff6ff; border-left: 6px solid #2563eb; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin: 15px 0;">
-<div style="display: flex; align-items: center; margin-bottom: 10px;">
-<span style="font-size: 20px; margin-right: 8px;">🎮</span>
-<h3 style="color: #1d4ed8; margin: 0; font-family: 'Segoe UI', sans-serif; font-weight: 700;">
-            3D Simulator for System of Linear Equations in 2 Variables
-</h3>
-</div>
-<p style="color: #1e40af; font-family: 'Segoe UI', sans-serif; font-size: 14px; margin-top: 0; margin-bottom: 12px;">
-Use the interactive simulation below to adjust the slopes ($m_1, m_2$) and intercepts ($c_1, c_2$) of the two lines in slope-intercept form:
-</p>
-<div style="background-color: #dbeafe; padding: 10px 15px; border-radius: 6px; text-align: center; font-family: 'Courier New', Courier, monospace; color: #1e3a8a; font-size: 15px; font-weight: bold;">
-y<sub>1</sub> = m<sub>1</sub>x + c<sub>1</sub><br>
-y<sub>2</sub> = m<sub>2</sub>x + c<sub>2</sub>
-</div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-trichotomy">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">⚖️</div>
-      <div class="sim-title-group">
-        <h3>2D Trichotomy Classifier</h3>
-        <p>The Three Fundamental Geometric Possibilities for 2D Linear Systems</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE SIMULATION</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="chip-toggle-group">
-      <button class="chip-btn active" id="tricho-case-1">Case 1: Unique Solution (Intersecting)</button>
-      <button class="chip-btn" id="tricho-case-2">Case 2: No Solution (Parallel Disjoint)</button>
-      <button class="chip-btn" id="tricho-case-3">Case 3: Infinitely Many (Coincident)</button>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="trichotomy-canvas" height="380" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="trichotomy-status">
-    <span>Select a case to inspect its geometric and algebraic characteristics.</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-18">
-<h2>Types of Solutions of System of Linear Equations in 2 Variables</h2>
-</div>
-<div class="theory-block" id="sec-19">
-<div align="center">
-<img 
-src="https://i.ibb.co/jvDz3cFt/types-of-solutions-and-their-graphs-1619703592-2.png"
-         alt="Welcome to Linear Algebra" 
-         width="85%" 
-         style="border-radius: 10px; margin-bottom: 20px;">
-</div>
-</div>
-<div class="theory-block" id="sec-20">
-<div style="background-color: #1E3A8A; padding: 14px 20px; border-radius: 8px; color: white; margin: 15px 0;">
-<h2 style="margin: 0; font-size: 20px; font-weight: bold; color: white;">Moving to 3 Variables: What Does $x + y + z = 1$ Represent?</h2>
-</div>
-
-<p style="font-size: 15px; line-height: 1.6; color: #1E293B;">
-In two dimensions, the equation $x + y = 2$ represents a straight <b>line</b>. But what happens when we introduce a third variable?
-</p>
-
-<p style="text-align: center; font-size: 18px; font-weight: bold; color: #0F172A; margin: 12px 0;">
-    $$x + y + z = 1$$
-</p>
-
-<ul style="font-size: 14.5px; line-height: 1.6; color: #334155; margin-bottom: 15px;">
-<li>In 2 variables, $x + y = 2$ defines a 1D line in 2D space ($\mathbb{R}^2$).</li>
-<li>In 3 variables, $x + y + z = 1$ defines a flat 2D <b>plane</b> slicing through 3D space ($\mathbb{R}^3$).</li>
-</ul>
-
-<p style="font-size: 15px; line-height: 1.6; color: #1E293B;">
-Now, consider the 3-equation system from Sheet 1:
-</p>
-
-<p style="text-align: center; font-size: 17px; margin: 10px 0;">
-    $$\begin{cases} 
-x + y + z = 1 \\ 
-2x + 2y + 2z = -1 \\ 
-x + y - z = 0 
-    \end{cases}$$
-</p>
-
-<p style="font-size: 14.5px; line-height: 1.6; color: #334155;">
-Geometrically, this signifies <b>three flat planes in 3-dimensional space</b>. A solution to this system is any point $(x, y, z)$ where all three planes meet simultaneously.
-</p>
-
-<div style="background-color: #FEFCE8; border-left: 6px solid #FACC15; padding: 14px 18px; border-radius: 6px; margin: 15px 0;">
-<b style="color: #A16207; font-size: 15px;">🤔 Stop & Ponder</b><br>
-<p style="margin: 6px 0 0 0; color: #713F12; font-size: 14px; line-height: 1.6;">
-<b>What are all the possible ways three planes can intersect?</b><br>
-On Page 5 of Sheet 1, there are 6 distinct geometric configurations:<br>
-1. <b>Unique Solution:</b> All 3 planes meet at a single shared corner point.<br>
-2. <b>Infinitely Many Solutions (Open Book):</b> All 3 planes intersect along a continuous shared line.<br>
-3. <b>Infinitely Many Solutions (Coincident):</b> All 3 equations describe the exact same plane.<br>
-4. <b>No Solution (Parallel Planes from Sheet 1):</b> Two planes ($x+y+z=1$ and $2x+2y+2z=-1$) are strictly parallel and never meet.<br>
-5. <b>No Solution (Triangular Tent / Prism):</b> Each pair of planes intersects in a line, but all three lines are parallel—they never meet at a common location.<br>
-6. <b>No Solution (Three Parallel Planes):</b> All three planes slice in parallel without touching.
-</p>
-</div>
-
-<div style="background-color: #EFF6FF; border-left: 6px solid #2563EB; padding: 14px 18px; border-radius: 6px; margin: 15px 0;">
-<b style="color: #1E40AF; font-size: 16px;">🔵 Interactive 3D Rotatable Planes Dashboard</b><br>
-<p style="margin: 6px 0 0 0; color: #1E40AF; font-size: 14px; line-height: 1.5;">
-Use your mouse to <b>click, drag, rotate, and zoom</b> the 3D space below. Select any of the 6 configurations from Sheet 1 to visualize why each case yields 1, 0, or infinitely many solutions.
-</p>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-3d-scenarios">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🧊</div>
-      <div class="sim-title-group">
-        <h3>3D Systems of 3 Linear Equations — 6 Geometric Cases</h3>
-        <p>Interactive WebGL 3D plane intersections in ℝ³</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> 3D WEBGL</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row">
-      <label for="scenario-3d-select" style="font-weight: 600; font-size: 0.9rem;">Choose Scenario:</label>
-      <select id="scenario-3d-select" class="custom-select" style="padding: 8px 12px; border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--bg-card-border); font-family: var(--font-body); flex: 1; max-width: 480px;">
-        <option value="unique">Case 1: Unique Solution (Single Intersection Point)</option>
-        <option value="line">Case 2: Infinitely Many Solutions (Line of Intersection — Open Book)</option>
-        <option value="prism">Case 3: No Solution (Triangular Prism / Tent)</option>
-        <option value="two_parallel">Case 4: No Solution (Two Parallel Planes Cut by Third)</option>
-        <option value="three_parallel">Case 5: No Solution (Three Strictly Parallel Sheets)</option>
-        <option value="coincident">Case 6: Infinitely Many Solutions (All 3 Planes Coincident)</option>
-      </select>
-    </div>
-  </div>
-  <div class="sim-stage-container" style="height: 480px;">
-    <div id="plotly-3d-scenarios" style="width: 100%; height: 100%;"></div>
-  </div>
-  <div class="sim-status-banner" id="scenario-3d-info">
-    <span>Loading 3D visualization... Click and drag to rotate the camera in 3D.</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-22">
-<h2>🧊 System of 3 Linear Equations in 3 Variables ($3 \times 3$)</h2>
-<p>Geometrically, each equation $a_i x + b_i y + c_i z = d_i$ represents a <strong>2D Plane</strong> cutting through 3D space. Finding the solution to the system means finding where all <strong>three planes share common points</strong>.</p>
-<h3>🔍 Try These Cases in the Controls Below:</h3>
-<ol>
-<li><strong>Unique Solution (Point):</strong> </li>
-<li>Default values: Eq 1: $(1, 1, 1, 6)$, Eq 2: $(0, 2, 5, -4)$, Eq 3: $(2, 5, -1, 27)$.</li>
-<li>
-<p><em>Notice how all 3 colored planes intersect at a single red point!</em></p>
-</li>
-<li>
-<p><strong>Infinitely Many Solutions (Line):</strong></p>
-</li>
-<li>Change Eq 3 to be a linear combination of Eq 1 &amp; 2: Set Eq 3 to $(1, 3, 6, 2)$.</li>
-<li>
-<p><em>Observe how the 3 planes intersect along a thick dark green line!</em></p>
-</li>
-<li>
-<p><strong>No Solution (Triangular Prism):</strong></p>
-</li>
-<li>Set Eq 1: $(1, 0, 0, 1)$, Eq 2: $(1, 0, 0, 2)$, Eq 3: $(0, 1, 0, 1)$.</li>
-<li><em>Notice parallel planes that never intersect simultaneously!</em></li>
-</ol>
-</div>
-<div class="theory-block" id="sec-23">
-<div style="background-color: #eff6ff; border-left: 6px solid #2563eb; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin: 15px 0;">
-<div style="display: flex; align-items: center; margin-bottom: 10px;">
-<span style="font-size: 20px; margin-right: 8px;">🌌</span>
-<h3 style="color: #1d4ed8; margin: 0; font-family: 'Segoe UI', sans-serif; font-weight: 700;">
-            3D Simulator: System of Linear Equations in 3 Variables
-</h3>
-</div>
-<p style="color: #1e40af; font-family: 'Segoe UI', sans-serif; font-size: 14px; margin-top: 0; margin-bottom: 12px;">
-Visualize how three planes interact simultaneously in 3D space ($\mathbb{R}^3$). Dynamically adjust the system coefficients to observe unique point solutions, infinite line intersections, and inconsistent parallel states:
-</p>
-<div style="background-color: #dbeafe; padding: 10px 15px; border-radius: 6px; text-align: center; font-family: 'Courier New', Courier, monospace; color: #1e3a8a; font-size: 15px; font-weight: bold;">
-a<sub>1</sub>x + b<sub>1</sub>y + c<sub>1</sub>z = d<sub>1</sub><br>
-a<sub>2</sub>x + b<sub>2</sub>y + c<sub>2</sub>z = d<sub>2</sub><br>
-a<sub>3</sub>x + b<sub>3</sub>y + c<sub>3</sub>z = d<sub>3</sub>
-</div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-3d-custom-solver">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🧮</div>
-      <div class="sim-title-group">
-        <h3>3D Custom Linear System Solver</h3>
-        <p>Input 3 plane equations to compute det(A), solve Ax = d, and render in 3D</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> 3D SOLVER</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
-      <div style="background: var(--bg-secondary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--bg-card-border);">
-        <strong style="font-size: 0.85rem; color: #3b82f6;">Plane 1 (a₁x + b₁y + c₁z = d₁)</strong>
-        <div style="display: flex; gap: 4px; margin-top: 4px;">
-          <input type="number" id="p1-a" value="1" step="0.5" style="width: 45px; padding: 3px;">
-          <input type="number" id="p1-b" value="1" step="0.5" style="width: 45px; padding: 3px;">
-          <input type="number" id="p1-c" value="1" step="0.5" style="width: 45px; padding: 3px;">
-          <span style="align-self: center;">=</span>
-          <input type="number" id="p1-d" value="3" step="0.5" style="width: 45px; padding: 3px;">
-        </div>
-      </div>
-      <div style="background: var(--bg-secondary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--bg-card-border);">
-        <strong style="font-size: 0.85rem; color: #10b981;">Plane 2 (a₂x + b₂y + c₂z = d₂)</strong>
-        <div style="display: flex; gap: 4px; margin-top: 4px;">
-          <input type="number" id="p2-a" value="1" step="0.5" style="width: 45px; padding: 3px;">
-          <input type="number" id="p2-b" value="-1" step="0.5" style="width: 45px; padding: 3px;">
-          <input type="number" id="p2-c" value="2" step="0.5" style="width: 45px; padding: 3px;">
-          <span style="align-self: center;">=</span>
-          <input type="number" id="p2-d" value="2" step="0.5" style="width: 45px; padding: 3px;">
-        </div>
-      </div>
-      <div style="background: var(--bg-secondary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--bg-card-border);">
-        <strong style="font-size: 0.85rem; color: #f59e0b;">Plane 3 (a₃x + b₃y + c₃z = d₃)</strong>
-        <div style="display: flex; gap: 4px; margin-top: 4px;">
-          <input type="number" id="p3-a" value="2" step="0.5" style="width: 45px; padding: 3px;">
-          <input type="number" id="p3-b" value="1" step="0.5" style="width: 45px; padding: 3px;">
-          <input type="number" id="p3-c" value="-1" step="0.5" style="width: 45px; padding: 3px;">
-          <span style="align-self: center;">=</span>
-          <input type="number" id="p3-d" value="2" step="0.5" style="width: 45px; padding: 3px;">
-        </div>
-      </div>
-    </div>
-    <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
-      <button id="solve-3d-btn" class="control-btn" style="padding: 8px 18px;">Solve & Update 3D Model</button>
-    </div>
-  </div>
-  <div class="sim-stage-container" style="height: 480px;">
-    <div id="plotly-3d-custom" style="width: 100%; height: 100%;"></div>
-  </div>
-  <div class="sim-status-banner" id="plotly-3d-custom-status">
-    <span>Ready to solve.</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-25">
-<h2>Types of Solutions of System of Linear Equations in 3 Variables</h2>
-</div>
-<div class="theory-block" id="sec-26">
-<div align="center">
-<img 
-src="https://i.ibb.co/7x3wJgQz/m-Ka-MMDb-1.jpg"
-         alt="Welcome to Linear Algebra" 
-         width="85%" 
-         style="border-radius: 10px; margin-bottom: 20px;">
-</div>
-</div>
-<div class="theory-block" id="sec-27">
-<div style="background-color: #1E3A8A; padding: 14px 20px; border-radius: 8px; color: white; margin: 15px 0;">
-<h2 style="margin: 0; font-size: 20px; font-weight: bold; color: white;">Theorem 1: Trichotomy for Linear Systems</h2>
-</div>
-
-<p style="font-size: 15px; line-height: 1.6; color: #1E293B;">
-The geometric explorations of lines and planes reveal a fundamental truth about linear systems: they can have <b>no solutions</b>, <b>exactly one solution</b>, or <b>infinitely many solutions</b>. These are the only possibilities.
-</p>
-
-<div style="background-color: #FFF7ED; border: 1px solid #FED7AA; border-left: 6px solid #EA580C; padding: 16px 20px; border-radius: 8px; margin: 15px 0;">
-<h3 style="margin: 0 0 8px 0; color: #C2410C; font-size: 17px; font-weight: bold;">Theorem 1 (Trichotomy for Linear Systems)</h3>
-<p style="margin: 0 0 10px 0; font-size: 14.5px; color: #9A3412; line-height: 1.6;">
-Every system of linear equations has either:
-</p>
-<ol style="margin: 0 0 10px 0; padding-left: 24px; color: #9A3412; font-size: 14.5px; line-height: 1.6;">
-<li><b>No solutions</b> (Inconsistent)</li>
-<li><b>Exactly one solution</b> (Consistent)</li>
-<li><b>Infinitely many solutions</b> (Consistent)</li>
-</ol>
-<p style="margin: 0; font-size: 13.5px; color: #7C2D12; line-height: 1.5;">
-<b>Note:</b> When a system has at least one solution (cases 2 and 3), it is called <b>consistent</b>. If it has no solutions (case 1), it is called <b>inconsistent</b>.
-</p>
-</div>
-
-<div style="background-color: #FEFCE8; border-left: 6px solid #FACC15; padding: 14px 18px; border-radius: 6px; margin: 15px 0;">
-<b style="color: #A16207; font-size: 15px;">🤔 Stop & Ponder</b><br>
-<p style="margin: 6px 0 0 0; color: #713F12; font-size: 14px; line-height: 1.5;">
-Why can a linear system <b>never have exactly 2 solutions or 3 solutions</b>?<br>
-If two distinct points both satisfy a linear system, the straight line connecting them must satisfy every plane or constraint in the system simultaneously—instantly producing an entire continuum of infinitely many solutions!
-</p>
-</div>
-
-<hr />
-<h3>Row Picture of the Three Cases in 2D</h3>
-<p>Whatever we have done so far is known as the <strong>row picture</strong> (intersecting or parallel lines). Consider the three benchmark systems given on Page 6 of Sheet 1:</p>
-<ol>
-<li><strong>One solution $(x, y) = (-1, 2)$</strong>:
-   $$\begin{cases} x + 2y = 3 \ 4x + 5y = 6 \end{cases}$$</li>
-<li><strong>Parallel: No solution</strong>:
-   $$\begin{cases} x + 2y = 3 \ 4x + 8y = 6 \end{cases}$$</li>
-<li><strong>Whole line of solutions</strong>:
-   $$\begin{cases} x + 2y = 3 \ 4x + 8y = 12 \end{cases}$$</li>
-</ol>
-<div style="background-color: #EFF6FF; border-left: 6px solid #2563EB; padding: 14px 18px; border-radius: 6px; margin: 15px 0;">
-<b style="color: #1E40AF; font-size: 16px;">🔵 Interactive 2D Row Picture Explorer</b><br>
-<p style="margin: 6px 0 0 0; color: #1E40AF; font-size: 14px; line-height: 1.5;">
-Select each of the three benchmark systems from Sheet 1 to visualize why their slopes and intercepts produce a unique intersection, strictly parallel lines, or completely coincident lines.
-</p>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-row-column">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🔄</div>
-      <div class="sim-title-group">
-        <h3>Row Picture vs. Column Picture Dual Studio</h3>
-        <p>System: x + 2y = 3, 4x + 5y = 6. Observe intersecting lines on the left and column combinations on the right.</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE DUAL-VIEW</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 16px;">
-      <div class="chip-toggle-group">
-        <button class="chip-btn rc-mode-btn active" data-mode="both">Both Pictures (Side-by-Side)</button>
-        <button class="chip-btn rc-mode-btn" data-mode="row">Row Picture Only</button>
-        <button class="chip-btn rc-mode-btn" data-mode="column">Column Picture Only</button>
-      </div>
-      <div style="display: flex; gap: 20px; align-items: center;">
-        <div class="slider-control-group" style="min-width: 180px;">
-          <div class="slider-label-row">
-            <label for="rc-x-slider">Weight x:</label>
-            <span class="slider-val-readout" id="rc-x-val">-1.00</span>
+          <!-- Module 2 -->
+          <div class="module-card-item">
+            <div class="card-top">
+              <span class="module-num-badge">MODULE 02</span>
+              <div class="module-icon-box">🎨</div>
+            </div>
+            <h3>Multidisciplinary Linear Algebra</h3>
+            <p>Matrix operations in real-world computer science: RGB color vector blending, digital audio waveform superposition, tea recipe combinations, and binary image transformations.</p>
+            <div class="module-card-tags">
+              <span>RGB Vectors</span>
+              <span>Audio Mixing</span>
+              <span>Dimension Compatibility</span>
+              <span>Image Filters</span>
+            </div>
+            <a href="module2.html" class="launch-module-btn">
+              <span>Launch Module 2 Labs</span>
+              <span>→</span>
+            </a>
           </div>
-          <input type="range" id="rc-x-slider" min="-3" max="3" step="0.2" value="-1.0" class="sim-slider">
-        </div>
-        <div class="slider-control-group" style="min-width: 180px;">
-          <div class="slider-label-row">
-            <label for="rc-y-slider">Weight y:</label>
-            <span class="slider-val-readout" id="rc-y-val">2.00</span>
+
+          <!-- Module 3 -->
+          <div class="module-card-item">
+            <div class="card-top">
+              <span class="module-num-badge">MODULE 03</span>
+              <div class="module-icon-box">🏹</div>
+            </div>
+            <h3>Vectors &amp; their Properties</h3>
+            <p>Three perspectives on a single vector. Head-to-tail vs. Parallelogram laws, continuous subspace spans, and gamified challenges: Vector Dials Radar &amp; The Broken Controller.</p>
+            <div class="module-card-tags">
+              <span>Translation Invariance</span>
+              <span>Linear Combinations</span>
+              <span>Continuous Span</span>
+              <span>Radar Mission Game</span>
+            </div>
+            <a href="module3.html" class="launch-module-btn">
+              <span>Launch Module 3 Labs</span>
+              <span>→</span>
+            </a>
           </div>
-          <input type="range" id="rc-y-slider" min="-1" max="4" step="0.2" value="2.0" class="sim-slider">
+
+          <!-- Module 4 -->
+          <div class="module-card-item">
+            <div class="card-top">
+              <span class="module-num-badge">MODULE 04</span>
+              <div class="module-icon-box">🪜</div>
+            </div>
+            <h3>Gaussian Elimination &amp; Row Operations</h3>
+            <p>Systematic matrix algorithms: the 3 legal Elementary Row Operations, pinned rope invariant intersection physics, Echelon Form $U$, and traffic network conservation laws.</p>
+            <div class="module-card-tags">
+              <span>Row Operations (EROs)</span>
+              <span>Pinned Rope Physics</span>
+              <span>Pivots &amp; Echelon Form U</span>
+              <span>Back-Substitution</span>
+            </div>
+            <a href="module4.html" class="launch-module-btn">
+              <span>Launch Module 4 Labs</span>
+              <span>→</span>
+            </a>
+          </div>
+
+          <!-- Module 5 -->
+          <div class="module-card-item">
+            <div class="card-top">
+              <span class="module-num-badge">MODULE 05</span>
+              <div class="module-icon-box">🧩</div>
+            </div>
+            <h3>Matrix Factorization &amp; $LU$ Decomposition</h3>
+            <p>Encoding elimination steps as Elementary Matrices $E_{ij}$. Inverse "Undo" engines, the $A = LU$ factorization, zero-multiplier crosstalk, and the Codebreaker Mini-Game.</p>
+            <div class="module-card-tags">
+              <span>Elimination Matrices E_ij</span>
+              <span>Inverse Undo Engine</span>
+              <span>A = LU Decomposition</span>
+              <span>Codebreaker Game</span>
+            </div>
+            <a href="module5.html" class="launch-module-btn">
+              <span>Launch Module 5 Labs</span>
+              <span>→</span>
+            </a>
+          </div>
+
+          <!-- Module 6 -->
+          <div class="module-card-item">
+            <div class="card-top">
+              <span class="module-num-badge">MODULE 06</span>
+              <div class="module-icon-box">🧭</div>
+            </div>
+            <h3>Linear Independence, Rank &amp; Solvability</h3>
+            <p>The Column Space $C(A)$, Matrix Rank, and testing consistency via Augmented Matrix $[A \mid \mathbf{b}]$. 3D vector space radar testing: lines vs. planes vs. full 3D space.</p>
+            <div class="module-card-tags">
+              <span>Linear Independence</span>
+              <span>Matrix Rank</span>
+              <span>Rank([A|b]) Test</span>
+              <span>3D Radar Space</span>
+            </div>
+            <a href="module6.html" class="launch-module-btn">
+              <span>Launch Module 6 Labs</span>
+              <span>→</span>
+            </a>
+          </div>
+
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="row-column-canvas" height="380" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="row-column-status">
-    <span>Slide weights x and y to inspect how linear combinations reconstruct target vector b!</span>
-  </div>
-</div>
+      </section>
 
-<div class="theory-block" id="sec-29">
-<div style="background-color: #1E3A8A; padding: 14px 20px; border-radius: 8px; color: white; margin: 15px 0;">
-<h2 style="margin: 0; font-size: 20px; font-weight: bold; color: white;">Why Do We Need Linear Algebra? The Matrix Notation</h2>
-</div>
-
-<p style="font-size: 15px; line-height: 1.6; color: #1E293B;">
-How do we solve a system of 3 linear equations with 3 unknowns? What strategy do you apply?
-</p>
-
-<p style="font-size: 14.5px; line-height: 1.6; color: #334155;">
-The primary high-school strategy is variable elimination: reduce 3 variables to 2, and then apply 2-variable algebra.
-</p>
-
-<p style="font-size: 15px; line-height: 1.6; color: #1E293B;">
-Now, let us add just one more variable:
-</p>
-
-<p style="text-align: center; font-size: 18px; font-weight: bold; color: #0F172A; margin: 10px 0;">
-    $$x + y + z + w = 1$$
-</p>
-
-<div style="background-color: #FEFCE8; border-left: 6px solid #FACC15; padding: 14px 18px; border-radius: 6px; margin: 15px 0;">
-<b style="color: #A16207; font-size: 15px;">🤔 Can we visualize this equation?</b><br>
-<p style="margin: 6px 0 0 0; color: #713F12; font-size: 14px; line-height: 1.5;">
-Even with computers and 3D graphics engines, <b>we cannot draw the full picture of a 4-dimensional object without losing information</b>. Our physical intuition fails past 3 dimensions.<br><br>
-This limitation gave birth to <b>Matrix Notation</b>. That is the beauty of linear algebra: <b>everything can be understood in the $2 \times 2$ case, and the exact same algebra scales flawlessly to hundreds or thousands of dimensions.</b>
-</p>
-</div>
-
-<hr />
-<h3>Packaging Systems into $A\mathbf{x} = \mathbf{b}$</h3>
-<p>Consider our humble system:</p>
-<p>$$\begin{cases} x + y = 2 \ -x + y = 0 \end{cases}$$</p>
-<p><strong>Steps to write matrix notation:</strong>
-1. Collect the coefficients of $x$ and $y$ into the <strong>Coefficient Matrix ($A$)</strong>.
-2. Write the variables $x$ and $y$ as a vertical <strong>Unknown Vector ($\mathbf{x}$)</strong>.
-3. Write the right-hand constants as the <strong>Target Vector ($\mathbf{b}$)</strong>:</p>
-<p>$$\underbrace{\begin{bmatrix} 1 &amp; 1 \ -1 &amp; 1 \end{bmatrix}}<em _mathbf_x="\mathbf{x">{A} \underbrace{\begin{bmatrix} x \ y \end{bmatrix}}</em>$$}} = \underbrace{\begin{bmatrix} 2 \ 0 \end{bmatrix}}_{\mathbf{b}</p>
-<div style="background-color: #FEFCE8; border-left: 6px solid #FACC15; padding: 12px 18px; border-radius: 6px; margin: 15px 0;">
-<b style="color: #A16207; font-size: 14.5px;">⚠️ Verification: Check the Left Hand Side</b><br>
-<p style="margin: 4px 0 0 0; color: #713F12; font-size: 14px;">
-        $$\begin{bmatrix} 1 & 1 \\ -1 & 1 \end{bmatrix} \begin{bmatrix} x \\ y \end{bmatrix} = \begin{bmatrix} 1\cdot x + 1\cdot y \\ -1\cdot x + 1\cdot y \end{bmatrix} = \begin{bmatrix} x + y \\ -x + y \end{bmatrix}$$
-</p>
-</div>
-
-<hr />
-<h3>The Column Picture: Scaling and Adding Vectors</h3>
-<p>We can rewrite the exact same matrix equation by its vertical columns:</p>
-<p>$$x \begin{bmatrix} 1 \ -1 \end{bmatrix} + y \begin{bmatrix} 1 \ 1 \end{bmatrix} = \begin{bmatrix} 2 \ 0 \end{bmatrix}$$</p>
-<p>This is the <strong>Column Picture of linear systems</strong>:
-* <strong>Row Picture</strong>: Asks where two constraint lines cross.
-* <strong>Column Picture</strong>: Asks how much to <b>scale Vector 1 ($\mathbf{u}$)</b> and <b>scale Vector 2 ($\mathbf{v}$)</b> so that their head-to-tail addition lands on the <b>Target Vector ($\mathbf{b}$)</b>.</p>
-<div style="background-color: #EFF6FF; border-left: 6px solid #2563EB; padding: 14px 18px; border-radius: 6px; margin: 15px 0;">
-<b style="color: #1E40AF; font-size: 16px;">🔵 Interactive Dashboard: Side-by-Side Dual-Verse (Row Picture vs. Column Picture)</b><br>
-<p style="margin: 6px 0 0 0; color: #1E40AF; font-size: 14px; line-height: 1.5;">
-Use the sliders for $x$ and $y$ below. Watch how the purple marker moves along the intersecting lines in the <b>Row Picture (left)</b> while the green and orange vectors scale and add head-to-tail to reach the target star in the <b>Column Picture (right)</b>!
-</p>
-</div>
-</div>
-<div class="theory-block" id="sec-30">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 18px 22px; border-radius: 8px; margin: 20px 0;">
-<h3 style="margin: 0 0 12px 0; color: #1E3A8A; font-size: 19px; font-weight: bold;">
-Understanding the Dual-Verse: Row Picture vs. Column Picture
-</h3>
-<p style="font-size: 14.5px; line-height: 1.6; color: #334155; margin-bottom: 12px;">
-Every linear system $A\mathbf{x} = \mathbf{b}$ tells two completely different geometric stories depending on whether you read the numbers <b>across rows</b> or <b>down columns</b>:
-</p>
-
-<div style="display: flex; gap: 16px; margin: 15px 0;">
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #BFDBFE; border-top: 4px solid #2563EB; border-radius: 6px; padding: 14px;">
-            <h4 style="margin: 0 0 6px 0; color: #1D4ED8; font-size: 15.5px;">📍 The Row Picture (Left Plot)</h4>
-            <ul style="margin: 0; padding-left: 18px; color: #1E293B; font-size: 13.5px; line-height: 1.5;">
-                <li><b>Viewpoint:</b> Read each row across as a constraint line.</li>
-                <li><b>Meaning of $x$ and $y$:</b> Coordinates of a single point $(x, y)$.</li>
-                <li><b>The Objective:</b> Find where the blue line and red line cross.</li>
-                <li><b>In the widget:</b> Moving the sliders moves the purple cross <b>$\mathbf{\times}$</b>. The solution is found when the cross sits directly on the intersection.</li>
-            </ul>
-</div>
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #FED7AA; border-top: 4px solid #EA580C; border-radius: 6px; padding: 14px;">
-            <h4 style="margin: 0 0 6px 0; color: #C2410C; font-size: 15.5px;">🎯 The Column Picture (Right Plot)</h4>
-            <ul style="margin: 0; padding-left: 18px; color: #1E293B; font-size: 13.5px; line-height: 1.5;">
-                <li><b>Viewpoint:</b> Read down each column as a complete vector arrow.</li>
-                <li><b>Meaning of $x$ and $y$:</b> Scaling dials that stretch or reverse vectors.</li>
-                <li><b>The Objective:</b> Scale Col 1 and Col 2 so they add head-to-tail to reach Target $\mathbf{b}$.</li>
-                <li><b>In the widget:</b> Moving the sliders stretches the teal and orange arrows. The solution is found when the arrow tip lands exactly on the pink star <b>$\bigstar$</b>.</li>
-            </ul>
-</div>
-</div>
-
-<div style="background-color: #FEFCE8; border-left: 5px solid #EAB308; padding: 10px 14px; border-radius: 4px; margin-top: 10px;">
-<p style="margin: 0; font-size: 13.5px; color: #713F12; line-height: 1.5;">
-            <b>💡 The Connection:</b> When the purple marker in the Row Picture hits the exact intersection point $(1, 1)$, the scaled vectors in the Column Picture simultaneously land directly on the target vector $\mathbf{b} = \begin{bmatrix} 2 \\ 0 \end{bmatrix}$!
-</p>
-</div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-column-explorer">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🎯</div>
-      <div class="sim-title-group">
-        <h3>2D Column Picture Linear Combination Explorer</h3>
-        <p>Scale column vectors x₁·v₁ and x₂·v₂ to hit the target vector b</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE COMBINATION</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 14px;">
-      <div class="number-input-group"><label>col₁ x (a₁₁)</label><input type="number" id="ce-a11" value="1.0" step="0.5"></div>
-      <div class="number-input-group"><label>col₁ y (a₂₁)</label><input type="number" id="ce-a21" value="-1.0" step="0.5"></div>
-      <div class="number-input-group"><label>col₂ x (a₁₂)</label><input type="number" id="ce-a12" value="1.0" step="0.5"></div>
-      <div class="number-input-group"><label>col₂ y (a₂₂)</label><input type="number" id="ce-a22" value="1.0" step="0.5"></div>
-      <div class="number-input-group"><label>Target b₁</label><input type="number" id="ce-b1" value="2.0" step="0.5"></div>
-      <div class="number-input-group"><label>Target b₂</label><input type="number" id="ce-b2" value="0.0" step="0.5"></div>
-    </div>
-    <div class="controls-row" style="margin-top: 10px; flex-wrap: wrap; gap: 20px;">
-      <div class="slider-control-group" style="flex: 1; min-width: 200px;">
-        <div class="slider-label-row">
-          <label for="ce-x1">Weight x₁ (v₁):</label>
-          <span class="slider-val-readout" id="ce-x1-val">1.00</span>
-        </div>
-        <input type="range" id="ce-x1" min="-3" max="3" step="0.1" value="1.0" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 200px;">
-        <div class="slider-label-row">
-          <label for="ce-x2">Weight x₂ (v₂):</label>
-          <span class="slider-val-readout" id="ce-x2-val">1.00</span>
-        </div>
-        <input type="range" id="ce-x2" min="-3" max="3" step="0.1" value="1.0" class="sim-slider">
-      </div>
-      <button id="ce-solve-btn" class="control-btn secondary" style="align-self: flex-end; padding: 10px 16px;">💡 Snap to Exact Solution</button>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="column-explorer-canvas" height="380" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="ce-status">
-    <span>Adjust x₁ and x₂ to align the linear combination with the target vector!</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-32">
-<div style="text-align: center; margin: 40px 0;">
-<span style="background-color: #e0e0e0; color: #555; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 13px;">
-        ✔ END OF MODULE 1 — PROCEED TO EXERCISES BELOW
-</span>
-</div>
-<hr style="border: 1px dashed #ccc;">
-</div>
-<div class="theory-block" id="sec-33">
-<div style="background-color: #fff7ed; border-left: 6px solid #f97316; border-radius: 8px; padding: 22px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin: 20px 0;">
-<div style="display: flex; align-items: center; margin-bottom: 12px;">
-<span style="font-size: 22px; margin-right: 10px;">✍️</span>
-<h3 style="color: #c2410c; margin: 0; font-family: 'Segoe UI', sans-serif; font-weight: 700;">Pen-and-Paper Assignment & Conceptual Analysis</h3>
-</div>
-<hr style="border: none; border-top: 1px solid #ffedd5; margin-bottom: 16px;">
-<div style="margin-bottom: 20px;">
-<h4 style="color: #ea580c; margin-top: 0; font-family: 'Segoe UI', sans-serif;">📝 Question 1: System Coincidence Analysis</h4>
-<p style="color: #9a3412; font-size: 14px; margin-bottom: 8px;">Consider the following system of linear equations:</p>
-<div style="background-color: #ffedd5; padding: 8px 15px; border-radius: 6px; text-align: center; font-family: 'Courier New', monospace; color: #7c2d12; font-weight: bold; margin-bottom: 10px;">2x - 3y = 6 <br> 4x - 6y = 12</div>
-<ul style="color: #9a3412; font-size: 14px; margin-top: 0; padding-left: 20px; line-height: 1.6;">
-            <li><b>Task 1:</b> Attempt to solve this system algebraically using elimination or substitution. What happens to your variables?</li>
-            <li><b>Task 2:</b> Write down the slope-intercept form (<i>y = mx + c</i>) for both lines.</li>
-            <li><b>Geometric Analysis:</b> Based on your findings, describe the physical layout of these two lines on a flat plane. Do they cross, run parallel, or lie on top of one another? State the total number of solutions.</li>
-</ul>
-</div>
-<div style="margin-bottom: 20px;">
-<h4 style="color: #ea580c; margin-top: 0; font-family: 'Segoe UI', sans-serif;">📝 Question 2: System Construction</h4>
-<p style="color: #9a3412; font-size: 14px; margin-bottom: 8px;">A system contains the baseline equation <i>3x + 2y = 5</i>.</p>
-<ul style="color: #9a3412; font-size: 14px; margin-top: 0; padding-left: 20px; line-height: 1.6;">
-            <li><b>Task 1:</b> Write a second linear equation such that the system has exactly one unique solution at the point (1, 1).</li>
-            <li><b>Task 2:</b> Write a second linear equation such that the system has zero solutions. What must be true about the slopes of the two equations?</li>
-</ul>
-</div>
-<div>
-<h4 style="color: #ea580c; margin-top: 0; font-family: 'Segoe UI', sans-serif;">📝 Question 3: 3D Planes & Parallelism</h4>
-<p style="color: #9a3412; font-size: 14px; margin-bottom: 8px;">You are given a system of three planes:</p>
-<div style="background-color: #ffedd5; padding: 8px 15px; border-radius: 6px; text-align: center; font-family: 'Courier New', monospace; color: #7c2d12; font-weight: bold; margin-bottom: 10px;">x + y + z = 3 <br> x - y + 2z = 2 <br> 2x + 2y + 2z = 5</div>
-<ul style="color: #9a3412; font-size: 14px; margin-top: 0; padding-left: 20px; line-height: 1.6;">
-            <li><b>Task 1:</b> Look closely at the coefficients of Equation 1 and Equation 3. What do you notice?</li>
-            <li><b>Geometric Analysis:</b> Without doing any long matrix calculations, explain why this system cannot possibly have a unique intersection point. What is the physical orientation of Plane 1 relative to Plane 3?</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="theory-block" id="sec-34">
-<div style="background-color: #fff7ed; border-left: 6px solid #f97316; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin: 15px 0;">
-<div style="display: flex; align-items: center; margin-bottom: 10px;">
-<span style="font-size: 20px; margin-right: 8px;">🐍</span>
-<h3 style="color: #c2410c; margin: 0; font-family: 'Segoe UI', sans-serif; font-weight: 700;">
-            Challenge 1: The 2D Determinant Checker (Fill-in-the-Blanks)
-</h3>
-</div>
-<p style="color: #9a3412; font-family: 'Segoe UI', sans-serif; font-size: 14px; margin-top: 0; margin-bottom: 0;">
-In this exercise, write a script that takes the coefficients of two lines ($ax + by = c$), builds a system matrix, and determines if the lines are parallel or intersecting based on the determinant.
-</p>
-</div>
-</div>
-
-<div class="exercise-card" id="ex-module-1">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px;">
-    <h3 style="margin:0; font-size: 1.15rem; color: #f97316;">📝 Module 1 Practice Exercise: Solving 2×2 Systems</h3>
-    <span style="background: rgba(249, 115, 22, 0.15); color: #f97316; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">HANDS-ON LAB</span>
-  </div>
-  <p>Consider the system: $$x + 2y = 5$$ $$3x + 4y = 11$$ Express this system in matrix form $A\mathbf{x} = \mathbf{b}$ and find the unique solution vector $\mathbf{x}$.</p>
-  <button class="toggle-solution-btn">💡 Reveal Solution & Python Code</button>
-  <div class="solution-content" style="display: none; margin-top: 15px; padding: 15px; background: rgba(99, 102, 241, 0.08); border-radius: var(--radius-sm); border: 1px solid var(--bg-card-border);">
-    <h4 style="margin-top:0; color:#10b981;">Step-by-Step Mathematical Solution:</h4>
-    <p>1. Coefficient Matrix $A = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}$, and Target Vector $\mathbf{b} = \begin{bmatrix} 5 \\ 11 \end{bmatrix}$.</p>
-    <p>2. Determinant $\det(A) = (1)(4) - (2)(3) = 4 - 6 = -2 \neq 0$ (Invertible system!).</p>
-    <p>3. Matrix Inverse $A^{-1} = \frac{1}{-2} \begin{bmatrix} 4 & -2 \\ -3 & 1 \end{bmatrix} = \begin{bmatrix} -2 & 1 \\ 1.5 & -0.5 \end{bmatrix}$.</p>
-    <p>4. Multiplying: $\mathbf{x} = A^{-1} \mathbf{b} = \begin{bmatrix} -2(5) + 1(11) \\ 1.5(5) - 0.5(11) \end{bmatrix} = \begin{bmatrix} 1 \\ 2 \end{bmatrix}$.</p>
-    <p><strong>Verification:</strong> $1(1) + 2(2) = 5$ ✓, and $3(1) + 4(2) = 11$ ✓!</p>
-    <pre style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto;"><code>import numpy as np
-
-A = np.array([[1.0, 2.0], [3.0, 4.0]])
-b = np.array([5.0, 11.0])
-
-# Direct linear solve via NumPy:
-x = np.linalg.solve(A, b)
-print(f"Solution vector: x = {x[0]}, y = {x[1]}")  # Outputs: x = 1.0, y = 2.0</code></pre>
-  </div>
-</div>
-
-</section>
-<section id="module-2" class="lecture-module-section">
-<div class="theory-block" id="sec-36">
-<p><br></p>
-<div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 20px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-<h1 style="color: white; margin: 0; font-size: 28px;">MODULE 2: Matrix Multiplication</h1>
-</div>
-<hr style="height: 3px; background-color: #2a5298; border: none; margin-top: 15px; margin-bottom: 30px;">
-</div>
-<div class="theory-block" id="sec-37">
-<div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-left: 6px solid #1E3A8A; padding: 14px 18px; border-radius: 6px;">
-  <p style="margin: 0 0 8px 0; font-style: italic; font-size: 15px; color: #1E293B;">"I cannot believe that anything so ugly as multiplication of matrices is an essential part of the scheme of nature." — <b>Arthur Eddington (1936)</b></p>
-  <p style="margin: 0; font-style: italic; font-size: 14px; color: #475569;">"I see, I forget. I hear, I remember. I do, I understand." — <b>Confucius</b></p>
-</div>
-
-<hr />
-<div style="background-color: #FFF7ED; border: 1px solid #FED7AA; border-left: 6px solid #EA580C; padding: 16px 20px; border-radius: 8px; margin: 15px 0;">
-  <h4 style="margin: 0 0 8px 0; color: #C2410C; font-size: 16px; font-weight: 700;">📌 By the End of This Module, You Will Be Able To:</h4>
-  <ul style="margin: 0; padding-left: 20px; color: #9A3412; font-size: 14.5px; line-height: 1.6;">
-<li>Compute matrix-vector products by organizing complete columns (Column Tea) or complete rows (Row Tea).</li>
-<li>Interpret a matrix on the right as several recipe vectors placed side by side.</li>
-<li>Explain the physical meaning of the rows and columns of a matrix product.</li>
-<li>Choose whether left or right multiplication is appropriate for a specific transformation.</li>
-<li>Manipulate digital binary images using shift ($U, D, L, R$) and flip ($F$) matrices.</li>
-<li>Construct targeted transformation multipliers $P$ and $Q$ to navigate pixel patterns.</li>
-  </ul>
-</div>
-
-<hr />
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #475569; padding: 18px 22px; border-radius: 8px; margin: 15px 0;">
-  <h3 style="margin: 0 0 10px 0; color: #1E293B; font-size: 18px; font-weight: bold;">Quick Recap: The Repeated Mathematical Move</h3>
-  <p style="font-size: 14.5px; line-height: 1.6; color: #334155; margin: 0 0 10px 0;">
-In high school, you learned the row-column rule: pick row $i$ of matrix $A$, pick column $j$ of matrix $B$, multiply matching entries, and add them up to find one cell $(i, j)$ of the output. While mathematically correct, computing an entire matrix entry-by-entry hides structural patterns.
-  </p>
-  <div style="background-color: #FEFCE8; border-left: 5px solid #EAB308; padding: 12px 16px; border-radius: 4px; margin: 10px 0;">
-<p style="margin: 0; font-size: 16px; font-weight: bold; color: #854D0E; text-align: center;">
-      "Scale objects of the same kind, then add them together."
-</p>
-  </div>
-  <p style="font-size: 14.5px; line-height: 1.6; color: #334155; margin: 10px 0 0 0;">
-Colours and sounds are concrete models of this operation:
-  </p>
-  <ul style="font-size: 14px; line-height: 1.6; color: #334155; margin: 6px 0 0 0; padding-left: 22px;">
-<li><b>Light Mixing:</b> Pure primary red, green, and blue beams are column vectors. A color recipe like $2\mathbf{r} + 1\mathbf{g} + 0\mathbf{b}$ scales each light source and merges them into a new color.</li>
-<li><b>Sound Mixing:</b> Audio signals sampled across time slices are column vectors. Playing Bach and Martin Luther King Jr. simultaneously scales their amplitudes and adds them together point-by-point.</li>
-  </ul>
-</div>
-</div>
-<div class="theory-block" id="sec-38">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 20px 24px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #1E3A8A; font-size: 21px; font-weight: 800;">
-Why Colors & Sounds? 
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-In standard high school algebra, matrix multiplication is introduced as a mechanical bookkeeping trick: take row $i$, take column $j$, multiply matching numbers, and sum them up[cite: 4]. While computationally correct, this entry-by-entry formula obscures the underlying physical structure.
-  </p>
-
-  <div style="background-color: #FEFCE8; border: 1px solid #FEF08A; border-left: 5px solid #CA8A04; padding: 12px 18px; border-radius: 6px; margin: 14px 0; text-align: center;">
-<span style="font-size: 17px; font-weight: bold; color: #854D0E;">
-The Core Move: "Scale objects of the same kind, then add them together."
-</span>
-  </div>
-
-  <p style="font-size: 14.5px; line-height: 1.6; color: #334155; margin: 12px 0 6px 0;">
-To build an intuition for why linear algebra powers computer graphics, acoustic engineering, and data science, consider two physical systems:
-  </p>
-
-  <div style="display: flex; gap: 16px; margin: 15px 0;">
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #BFDBFE; border-top: 4px solid #2563EB; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #1D4ED8; font-size: 15.5px;">💡 Additive Light Synthesis (Computer Graphics)</h4>
-<p style="margin: 0; font-size: 13.5px; color: #334155; line-height: 1.5;">
-Every screen pixel is built from three independent physical light emitters: <b>Red</b>, <b>Green</b>, and <b>Blue</b>[cite: 4]. These are base coordinate axes (basis vectors):
-        $$\mathbf{r} = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}, \quad \mathbf{g} = \begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix}, \quad \mathbf{b} = \begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}$$
-When you set brightness levels (such as $0.8\mathbf{r} + 0.3\mathbf{g} + 0.0\mathbf{b}$), you are <b>scaling complete columns and adding them</b> to synthesize an entirely new color vector.
-</p>
-</div>
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #FED7AA; border-top: 4px solid #EA580C; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #C2410C; font-size: 15.5px;">🎵 Acoustic Superposition (Audio Engineering)</h4>
-<p style="margin: 0; font-size: 13.5px; color: #334155; line-height: 1.5;">
-Sound waves traveling through air do not bounce off or destroy one another; their air pressures simply <b>add together point-by-point in time</b>. Digital audio is stored as long column vectors of sampled pressure amplitudes:
-        $$\mathbf{s}_{\text{mixed}} = c_1 \mathbf{s}_{\text{Bach}} + c_2 \mathbf{s}_{\text{MLK}}$$
-The scalar coefficients $c_1$ and $c_2$ act as the volume dials on an audio mixer board.
-</p>
-</div>
-  </div>
-
-  <div style="background-color: #F1F5F9; border-radius: 6px; padding: 14px 18px; margin-top: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #0F172A; font-size: 15px;">🎼 Who are the voices in this experiment?</h4>
-<ul style="margin: 0; padding-left: 20px; font-size: 13.5px; color: #475569; line-height: 1.6;">
-<li>
-<b>Johann Sebastian Bach (1685–1750):</b> A Baroque composer whose mathematical precision in counterpoint, fugues, and organ acoustics laid foundations for classical music and harmonic theory. The clip features a classical harmonic motif.
-</li>
-<li>
-<b>Dr. Martin Luther King Jr. (1929–1968):</b> A civil rights leader and orator whose address delivered at the Lincoln Memorial in Washington, D.C., remains one of the defining speeches in world history. The clip features a recording of this address.
-</li>
-</ul>
-<p style="margin: 8px 0 0 0; font-size: 13.5px; color: #334155; line-height: 1.5;">
-In linear algebra, Bach's harmony and King's spoken voice are mathematical vectors in $\mathbb{R}^N$. Scaling them and adding them together creates an acoustic superposition.
-</p>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-rgb-studio">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🎨</div>
-      <div class="sim-title-group">
-        <h3>RGB Light Studio in ℝ³</h3>
-        <p>Any color in the visible spectrum is a linear combination of standard basis light vectors: e₁, e₂, e₃</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE COLOR SPACE</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 20px;">
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row">
-          <label for="rgb-r" style="color: #ef4444;">Red Dial (r):</label>
-          <span class="slider-val-readout" id="rgb-r-val">0.90</span>
-        </div>
-        <input type="range" id="rgb-r" min="0" max="1" step="0.02" value="0.9" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row">
-          <label for="rgb-g" style="color: #10b981;">Green Dial (g):</label>
-          <span class="slider-val-readout" id="rgb-g-val">0.45</span>
-        </div>
-        <input type="range" id="rgb-g" min="0" max="1" step="0.02" value="0.45" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row">
-          <label for="rgb-b" style="color: #3b82f6;">Blue Dial (b):</label>
-          <span class="slider-val-readout" id="rgb-b-val">0.10</span>
-        </div>
-        <input type="range" id="rgb-b" min="0" max="1" step="0.02" value="0.1" class="sim-slider">
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container" style="display: flex; gap: 20px; align-items: center; justify-content: center; padding: 25px 20px;">
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
-      <div id="rgb-swatch-box" style="width: 150px; height: 150px; border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 2px solid #fff; transition: background-color 0.1s ease;"></div>
-      <span id="rgb-hex-code" style="font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; letter-spacing: 1px;">#E67319</span>
-    </div>
-    <div style="flex: 1; max-width: 450px;">
-      <canvas id="rgb-bar-canvas" height="220" style="width: 100%; border-radius: 8px;"></canvas>
-    </div>
-  </div>
-  <div class="sim-status-banner" style="justify-content: center;">
-    <div id="rgb-equation-display" style="font-family: var(--font-mono); font-size: 0.95rem;"></div>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-40">
-<div style="background-color: #EFF6FF; border: 1px solid #BFDBFE; border-left: 6px solid #2563EB; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
-  <h4 style="margin: 0 0 6px 0; color: #1D4ED8; font-size: 16px; font-weight: bold;">
-    🎧 Real Audio Superposition: Scaling & Adding Recorded Waves
-  </h4>
-  <p style="margin: 0; font-size: 14px; color: #1E40AF; line-height: 1.5;">
-Below, the actual audio recordings of Bach's music and Dr. King's speech are loaded as vector arrays $\mathbf{s}_{\text{Bach}}, \mathbf{s}_{\text{MLK}} \in \mathbb{R}^N$.<br>
-Move the gain sliders to change the scalar multipliers $c_1$ and $c_2$. The plot will display the actual time-series samples of the wave, and the player will allow you to listen to the mixed audio signal.
-  </p>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-audio-mixer">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🎵</div>
-      <div class="sim-title-group">
-        <h3>Acoustic Wave Superposition Studio</h3>
-        <p>Linear combination of sound vectors: s(t) = α · Bach(t) + β · MLK(t) in the browser via Web Audio API</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE WEB AUDIO</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 20px;">
-      <div class="slider-control-group" style="flex: 1; min-width: 200px;">
-        <div class="slider-label-row">
-          <label for="audio-bach-gain">Bach Volume (α):</label>
-          <span class="slider-val-readout" id="audio-bach-val">0.80</span>
-        </div>
-        <input type="range" id="audio-bach-gain" min="0" max="1" step="0.05" value="0.8" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 200px;">
-        <div class="slider-label-row">
-          <label for="audio-mlk-gain">MLK Speech Volume (β):</label>
-          <span class="slider-val-readout" id="audio-mlk-val">0.60</span>
-        </div>
-        <input type="range" id="audio-mlk-gain" min="0" max="1" step="0.05" value="0.6" class="sim-slider">
-      </div>
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <button id="audio-play-btn" class="control-btn" style="padding: 10px 22px;">▶ Play Mix</button>
-        <button id="audio-stop-btn" class="control-btn secondary" style="display: none; padding: 10px 22px;">⏸ Pause</button>
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="audio-waveform-canvas" height="240" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="audio-status-banner">
-    <span>Click "Play Mix" to hear real-time vector addition of two sound waves!</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-42">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 18px 22px; border-radius: 8px; margin: 20px 0;">
-  <h3 style="margin: 0 0 10px 0; color: #1E3A8A; font-size: 19px; font-weight: bold;">
-2. Reconnect with the Familiar Method: The Entry-by-Entry Cost
-  </h3>
-  <p style="font-size: 14.5px; line-height: 1.6; color: #334155; margin: 0 0 10px 0;">
-Let us evaluate two square $3 \times 3$ matrices:
-  </p>
-  <p style="text-align: center; font-size: 16px; margin: 10px 0; color: #0F172A;">
-    $$A = \begin{bmatrix} 1 & 0 & 2 \\ -1 & 3 & 1 \\ 0 & 1 & 4 \end{bmatrix}, \quad 
-B = \begin{bmatrix} 2 & 1 & 3 \\ 4 & 0 & -1 \\ 1 & 2 & 0 \end{bmatrix}$$
-  </p>
-  <p style="font-size: 14.5px; line-height: 1.6; color: #334155; margin: 10px 0 0 0;">
-To compute entry $c_{11}$, you compute:
-    $$c_{11} = (1)(2) + (0)(4) + (2)(1) = 2 + 0 + 2 = 4$$
-<b>How many individual scalar multiplications did computing the full $3 \times 3$ matrix require?</b><br>
-Each of the $9$ entries requires $3$ separate multiplications:
-    $$9 \text{ entries} \times 3 \text{ multiplications/entry} = 27 \text{ scalar multiplications}$$
-  </p>
-</div>
-
-<div style="background-color: #FFF7ED; border: 1px solid #FED7AA; border-left: 6px solid #EA580C; padding: 16px 20px; border-radius: 8px; margin: 15px 0;">
-  <h4 style="margin: 0 0 6px 0; color: #C2410C; font-size: 16px; font-weight: bold;">📐 Dimensional Compatibility: Why Inner Dimensions Must Match</h4>
-  <p style="font-size: 14px; line-height: 1.6; color: #9A3412; margin: 0 0 8px 0;">
-Consider rectangular matrices:
-  </p>
-  <p style="text-align: center; font-size: 15px; margin: 6px 0; color: #7C2D12;">
-    $$A_{2 \times 3} = \begin{bmatrix} 2 & 1 & 4 \\ 0 & -2 & 3 \end{bmatrix}, \quad 
-B_{3 \times 3} = \begin{bmatrix} 1 & 3 & 2 \\ 2 & 0 & 1 \\ -1 & 4 & 0 \end{bmatrix}$$
-  </p>
-  <ul style="font-size: 14px; line-height: 1.6; color: #9A3412; margin: 0; padding-left: 22px;">
-<li><b>Can we compute $AB$?</b> Yes. Dimensions are $(2 \times \mathbf{3}) \times (\mathbf{3} \times 3) \rightarrow 2 \times 3$.</li>
-<li><b>Can we compute the reverse product $BA$?</b> The dimensions would be $(3 \times \mathbf{3}) \times (\mathbf{2} \times 3)$. <b>The inner dimensions do not match ($3 \neq 2$).</b> Each row of $B$ contains 3 numbers, but each column of $A$ contains only 2 numbers. They run out of partners during the dot product!</li>
-  </ul>
-</div>
-
-<div style="background-color: #FEFCE8; border-left: 6px solid #FACC15; padding: 14px 18px; border-radius: 6px; margin: 15px 0;">
-  <b style="color: #A16207; font-size: 15px;">🤔 A Large Product: Choose a Viewpoint (Sheet 2, Page 4)</b><br>
-  <p style="margin: 6px 0 0 0; color: #713F12; font-size: 14px; line-height: 1.6;">
-Suppose you are given an $8 \times 8$ matrix $A$ where columns repeat:
-  </p>
-  <p style="text-align: center; font-size: 14px; margin: 6px 0; color: #713F12;">
-    $$A = \begin{bmatrix} 
-1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 \\ 
-0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 \\ 
-1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 \\ 
-0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 \\ 
-1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 \\ 
-0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 \\ 
-1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 \\ 
-0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 
-    \end{bmatrix}, \quad 
-    \mathbf{x} = \begin{bmatrix} 1 \\ 1 \\ 1 \\ 1 \\ 1 \\ 1 \\ 1 \\ 1 \end{bmatrix}$$
-  </p>
-  <p style="margin: 6px 0 0 0; color: #713F12; font-size: 14px; line-height: 1.6;">
-If you calculate this entry-by-entry, you will compute $8$ separate dot products. But notice: <b>$A$ only has two distinct columns!</b><br>
-    $$\text{Col}_{\text{odd}} = \begin{bmatrix} 1 \\ 0 \\ 1 \\ 0 \\ 1 \\ 0 \\ 1 \\ 0 \end{bmatrix}, \quad 
-      \text{Col}_{\text{even}} = \begin{bmatrix} 0 \\ 1 \\ 0 \\ 1 \\ 0 \\ 1 \\ 0 \\ 1 \end{bmatrix}$$
-Scaling each by $1$ and adding them combines the two columns into:
-    $$A\mathbf{x} = 4 \cdot \text{Col}_{\text{odd}} + 4 \cdot \text{Col}_{\text{even}} = \begin{bmatrix} 4 \\ 4 \\ 4 \\ 4 \\ 4 \\ 4 \\ 4 \\ 4 \end{bmatrix}$$
-A single observation saves 64 arithmetic operations.
-  </p>
-</div>
-</div>
-<div class="theory-block" id="sec-43">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #2563EB; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #1E40AF; font-size: 20px; font-weight: 800;">
-The Order Paradox & Dimension Alignment in Matrix Multiplication
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-In basic scalar arithmetic, multiplication is commutative ($3 \times 5 = 5 \times 3$). In linear algebra, <b>matrix multiplication is non-commutative ($AB \neq BA$)</b>. Changing the order does not just alter numbers—it often breaks structural alignment entirely.
-  </p>
-
-  <div style="display: flex; gap: 16px; margin: 16px 0;">
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #2563EB; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #1D4ED8; font-size: 15px;">🔍 The Product $AB$: Why Inner Dimensions Control Life & Death</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-For $AB$ to exist, each horizontal row of $A$ must calculate a dot product with each vertical column of $B$.
-<br><br>
-        $$(m \times \mathbf{n}) \times (\mathbf{p} \times q)$$
-        • Each row in $A$ has length <b>$n$</b>.<br>
-        • Each column in $B$ has height <b>$p$</b>.<br>
-If $n \neq p$, entries run out of partners and the operation cannot be formed.
-</p>
-</div>
-
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #EA580C; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #C2410C; font-size: 15px;">🔄 The Reverse Product $BA$: When Order Destroys Operations</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-Reversing to $BA$ checks a completely different pair of inner dimensions:
-<br><br>
-        $$(p \times \mathbf{q}) \times (\mathbf{m} \times n)$$
-Even if $AB$ exists and computes to an $m \times q$ matrix, $BA$ can be completely undefined unless $q = m$
-</p>
-</div>
-  </div>
-
-  <div style="background-color: #EFF6FF; border: 1px solid #BFDBFE; border-left: 5px solid #2563EB; padding: 12px 18px; border-radius: 6px; margin-top: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #1D4ED8; font-size: 15px; font-weight: bold;">🎯 What the Interactive Visualizer Below Shows:</h4>
-<p style="margin: 0; font-size: 13.5px; color: #1E40AF; line-height: 1.5;">
-      • Adjust the row and column sliders for matrices $A$ and $B$.<br>
-      • Watch the dimensional block diagram update dynamically to show when inner dimensions align or collide.<br>
-      • Observe live updates of both $AB$ and the reverse product $BA$, including real-time mathematical status banners.
-</p>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-matrix-dimensions">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🧱</div>
-      <div class="sim-title-group">
-        <h3>Matrix Dimension Compatibility Visualizer</h3>
-        <p>Multiplication A(m × k₁) · B(k₂ × n) is defined if and only if inner dimensions match (k₁ = k₂)</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE VISUALIZER</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 14px;">
-      <div class="slider-control-group" style="min-width: 140px;">
-        <div class="slider-label-row"><label>Rows A (m):</label><span id="dim-m-val">3</span></div>
-        <input type="range" id="dim-m" min="1" max="5" value="3" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="min-width: 140px;">
-        <div class="slider-label-row"><label>Cols A (k₁):</label><span id="dim-k1-val">3</span></div>
-        <input type="range" id="dim-k1" min="1" max="5" value="3" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="min-width: 140px;">
-        <div class="slider-label-row"><label>Rows B (k₂):</label><span id="dim-k2-val">3</span></div>
-        <input type="range" id="dim-k2" min="1" max="5" value="3" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="min-width: 140px;">
-        <div class="slider-label-row"><label>Cols B (n):</label><span id="dim-n-val">2</span></div>
-        <input type="range" id="dim-n" min="1" max="5" value="2" class="sim-slider">
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container" style="display: flex; justify-content: space-around; align-items: center; padding: 25px 15px; flex-wrap: wrap; gap: 15px;">
-    <div id="dim-a-box" style="text-align: center;"></div>
-    <div style="font-size: 28px; font-weight: bold; color: var(--accent-primary);">×</div>
-    <div id="dim-b-box" style="text-align: center;"></div>
-    <div style="font-size: 28px; font-weight: bold; color: var(--accent-primary);">=</div>
-    <div id="dim-c-box" style="text-align: center;"></div>
-  </div>
-  <div class="sim-status-banner" id="dim-status-banner">
-    <span>Checking dimension compatibility...</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-45">
-<h2>High-Altitude Analogies (The Teamix Recipes)</h2>
-<p>To understand vector transformations, let's look at matrix operations through physical analogies.</p>
-<h3>1. The Column-Multeaplication Way</h3>
-<p>When a matrix multiplies a column vector from the right ($Ax$), <strong>the matrix is a pantry containing column vectors of raw ingredients</strong>, and the vector $x$ dictates the proportions needed to brew a nice tea.</p>
-<p>$$Ax = x_1 \cdot \mathbf{col}_1 + x_2 \cdot \mathbf{col}_2 + x_3 \cdot \mathbf{col}_3$$</p>
-<p>Every matrix-vector product is simply a <strong>linear combination of the columns of the matrix</strong> scaling simultaneously in a parallel hardware heartbeat.</p>
-<h3>2. The Row-Multeaplication Way</h3>
-<p>Conversely, when a row vector acts on a matrix from the left ($y^T A$), <strong>the ingredient jars are laid out horizontally</strong>, creating a row-tea blend by mixing the rows of the matrix linearly based on the weights in $y^T$.</p>
-</div>
-<div class="theory-block" id="sec-46">
-<h2>The Column Way:</h2>
-<div align="center">
-<img 
-src="https://i.ibb.co/VY11zcch/Screenshot-2026-07-27-at-11-56-14-AM.png"
-         alt="Welcome to Linear Algebra" 
-         width="85%" 
-         style="border-radius: 10px; margin-bottom: 20px;">
-</div>
-</div>
-<div class="theory-block" id="sec-47">
-<h2>The Row Way:</h2>
-<div align="center">
-<img 
-src="https://i.ibb.co/NdxjYHw2/Screenshot-2026-07-27-at-11-58-41-AM.png"
-         alt="Welcome to Linear Algebra" 
-         width="85%" 
-         style="border-radius: 10px; margin-bottom: 20px;">
-</div>
-</div>
-<div class="theory-block" id="sec-48">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #B45309; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #78350F; font-size: 20px; font-weight: 800;">
-    🍵 The "MUL-TEA-PLICATION" Kitchen: Column Tea vs. Row Tea
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-To build an intuition for matrix multiplication, let us move away from dry formulas and step into a tea stall:
-  </p>
-
-  <div style="display: flex; gap: 16px; margin: 16px 0;">
-<div style="flex: 1.1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #D97706; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #92400E; font-size: 15px;">🏺 The Matrix $A$ is the Ingredient Jars</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-Each <b>column</b> of $A$ is an ingredient:
-<br>• <b>Column 1:</b> Black Tea Leaves
-<br>• <b>Column 2:</b> Whole Milk
-<br>• <b>Column 3:</b> Cane Sugar
-<br><br>
-Each <b>row</b> measures an sensory property:
-<br>• <b>Row 1:</b> Boldness / Bitterness
-<br>• <b>Row 2:</b> Creaminess / Body
-<br>• <b>Row 3:</b> Sweetness
-</p>
-</div>
-
-<div style="flex: 1.1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #2563EB; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #1E40AF; font-size: 15px;">📋 The Vector $\mathbf{x}$ is the Recipe</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-A column vector on the right $\mathbf{x} = \begin{bmatrix} x_1 \\ x_2 \\ x_3 \end{bmatrix}$ is customer order:
-<br>• $x_1$ = scoops of Tea Leaves
-<br>• $x_2$ = cups of Milk
-<br>• $x_3$ = spoons of Sugar
-<br><br>
-<b>Column Tea ($A\mathbf{x}$):</b>
-        $$x_1 \mathbf{a}_1 + x_2 \mathbf{a}_2 + x_3 \mathbf{a}_3 = \text{Brewed Cup}$$
-</p>
-</div>
-  </div>
-
-  <div style="background-color: #FEFCE8; border: 1px solid #FEF08A; border-left: 5px solid #CA8A04; padding: 12px 18px; border-radius: 6px; margin-top: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #854D0E; font-size: 15px; font-weight: bold;">🎯 What to Observe in the Interactive Kitchen Below:</h4>
-<p style="margin: 0; font-size: 13.5px; color: #713F12; line-height: 1.5;">
-      • Move the ingredient sliders ($x_1, x_2, x_3$).
-<br>• Watch the <b>tea glass fill up in real time</b>. If you add more milk ($x_2$), the tea turns creamy and light; if you add more tea leaves ($x_1$), it turns deep amber brown.
-<br>• The sensory radar and meters compute the exact product vector: <b>$A\mathbf{x}$</b>!
-</p>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-chai-kitchen">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">☕</div>
-      <div class="sim-title-group">
-        <h3>Chai Kitchen Recipe Matrix Mixer</h3>
-        <p>A·x = b: Matrix A translates raw ingredient quantities (x) into customer taste profiles (b)</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE BREWING</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 20px;">
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>Black Tea Leaves (spoons):</label><span id="chai-tea-val">2.0</span></div>
-        <input type="range" id="chai-tea" min="0" max="4" step="0.5" value="2.0" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>Whole Milk (cups):</label><span id="chai-milk-val">1.5</span></div>
-        <input type="range" id="chai-milk" min="0" max="3" step="0.5" value="1.5" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>Sugar (cubes):</label><span id="chai-sugar-val">1.0</span></div>
-        <input type="range" id="chai-sugar" min="0" max="4" step="0.5" value="1.0" class="sim-slider">
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container" style="display: flex; gap: 20px; align-items: center; justify-content: space-around; flex-wrap: wrap; padding: 20px;">
-    <div style="flex: 1; min-width: 250px; max-width: 400px;">
-      <canvas id="chai-flavor-canvas" height="240" style="width: 100%; border-radius: 8px;"></canvas>
-    </div>
-    <div style="flex: 1; min-width: 200px; max-width: 300px; text-align: center;">
-      <canvas id="chai-cup-canvas" height="240" style="width: 100%; border-radius: 8px;"></canvas>
-    </div>
-  </div>
-  <div class="sim-status-banner" id="chai-readout">
-    <span>Computing flavor vector b = Ax...</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-50">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 14px 0; color: #1E3A8A; font-size: 20px; font-weight: 800;">
-3. Binary Images: What Does Matrix Multiplication Actually Do to an Image?
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-A digital monochrome screen displays pictures as a grid of pixels. In computing, this grid is simply a <b>binary matrix $X$</b>, where:
-  </p>
-  <ul style="font-size: 14.5px; color: #334155; line-height: 1.6; margin: 0 0 14px 0; padding-left: 24px;">
-<li><b>$1$</b> represents an activated, shaded/black pixel.</li>
-<li><b>$0$</b> represents an unshaded, white background pixel.</li>
-  </ul>
-
-  <div style="background-color: #FEFCE8; border: 1px solid #FEF08A; border-left: 5px solid #CA8A04; padding: 12px 18px; border-radius: 6px; margin: 14px 0;">
-<h4 style="margin: 0 0 6px 0; color: #854D0E; font-size: 15px; font-weight: bold;">🎯 The Central Learning Objective</h4>
-<p style="margin: 0; font-size: 14px; color: #713F12; line-height: 1.5;">
-Understand how the <b>algebraic position of a multiplier matrix</b> controls the <b>geometric movement of an image</b>:
-<br>
-      • <b>Left multiplication ($P \cdot X$)</b> acts strictly on the <b>horizontal rows</b> (vertical motion: up, down, upside-down flip).
-<br>
-      • <b>Right multiplication ($X \cdot Q$)</b> acts strictly on the <b>vertical columns</b> (horizontal motion: left, right, mirror flip).
-</p>
-  </div>
-
-  <h3 style="margin: 16px 0 8px 0; color: #0F172A; font-size: 16px; font-weight: bold;">
-What Are These Operations and How Do They Work?
-  </h3>
-  <p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0 0 10px 0;">
-When you multiply two matrices, you are not running an arbitrary black box. Every row of the multiplier $P$ tells the computer which rows of $X$ to pick, scale, and combine:
-  </p>
-
-  <div style="display: flex; gap: 14px; margin: 12px 0;">
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 3px solid #7C3AED; border-radius: 6px; padding: 12px;">
-<b style="color: #6D28D9; font-size: 14px;">Shift Up ($U$ on Left)</b>
-<p style="font-size: 12.5px; color: #475569; margin: 4px 0 0 0; line-height: 1.4;">
-Row 1 of $U$ is $\begin{bmatrix}0&1&0&0\end{bmatrix}$. It selects Row 2 of $X$ and promotes it to the new top row. The whole image shifts upward by 1 pixel.
-</p>
-</div>
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 3px solid #16A34A; border-radius: 6px; padding: 12px;">
-<b style="color: #15803D; font-size: 14px;">Shift Right ($R$ on Right)</b>
-<p style="font-size: 12.5px; color: #475569; margin: 4px 0 0 0; line-height: 1.4;">
-Column 2 of $R$ is $\begin{bmatrix}1\\0\\0\\0\end{bmatrix}$. It takes Column 1 of $X$ and pushes it into Column 2. The entire image moves rightward by 1 pixel.
-</p>
-</div>
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 3px solid #EA580C; border-radius: 6px; padding: 12px;">
-<b style="color: #C2410C; font-size: 14px;">Reversal / Flip ($F$)</b>
-<p style="font-size: 12.5px; color: #475569; margin: 4px 0 0 0; line-height: 1.4;">
-Contains ones along the anti-diagonal. On the <b>left</b>, it reverses row order (Row 1 $\leftrightarrow$ Row 4). On the <b>right</b>, it reverses column order (Col 1 $\leftrightarrow$ Col 4).
-</p>
-</div>
-  </div>
-
-  <div style="background-color: #EFF6FF; border-left: 5px solid #2563EB; padding: 10px 14px; border-radius: 4px; margin-top: 14px;">
-<p style="margin: 0; font-size: 13.5px; color: #1E40AF; line-height: 1.5;">
-<b>💡 Notice the Identical Matrices:</b> The Shift Up matrix $U$ and Shift Right matrix $R$ have the exact same numbers inside them! Their effect is completely different simply because one sits on the <b>left</b> (acting on rows) and the other sits on the <b>right</b> (acting on columns).
-</p>
-  </div>
-</div>
-</div>
-<div class="theory-block" id="sec-51">
-<div style="background-color: #EFF6FF; border: 1px solid #BFDBFE; border-left: 6px solid #2563EB; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
-  <h4 style="margin: 0 0 6px 0; color: #1D4ED8; font-size: 16px; font-weight: bold;">
-    🖼️ Context: Binary Images as Matrices Studio
-  </h4>
-  <p style="margin: 0; font-size: 14px; color: #1E40AF; line-height: 1.5;">
-<b>What you will explore below:</b><br>
-1. Select an image matrix $X$ (Center Block, L-Shape, or Identity diagonal).<br>
-2. Choose an operation on the <b>Left ($P$)</b> to see it reorder horizontal rows (vertical shift/flip).<br>
-3. Choose an operation on the <b>Right ($Q$)</b> to see it reorder vertical columns (horizontal shift/flip).<br>
-4. Solve the <b>Reverse Challenge</b>: Choose the exact matrices $P$ and $Q$ needed to move the starting shape to match the target objective!
-  </p>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-image-transform">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🖼️</div>
-      <div class="sim-title-group">
-        <h3>Digital Image Matrix Transformations</h3>
-        <p>Multiplying image matrix X by shift, flip, and permutation matrices produces geometric edits</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> MATRIX TRANSFORMS</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row">
-      <label for="img-op-select" style="font-weight: 600;">Choose Operation M:</label>
-      <select id="img-op-select" class="custom-select" style="padding: 8px 12px; border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--bg-card-border); font-family: var(--font-body); flex: 1; max-width: 450px;">
-        <option value="identity">Identity Matrix I (No Change)</option>
-        <option value="up">Shift Up U (Rows Shift Up)</option>
-        <option value="down">Shift Down D (Rows Shift Down)</option>
-        <option value="flip">Flip Vertical F (Inverts Row Order)</option>
-        <option value="up2">Shift Up 2 U² (Double Up Shift)</option>
-      </select>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="img-transform-canvas" height="240" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="img-transform-status">
-    <span>Select an operation to observe matrix row transformations.</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-53">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #1E3A8A; font-size: 20px; font-weight: 800;">
-4. From One Recipe to a Recipe Book: Matrix-Matrix Multiplication ($AB$)
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-In the previous section, we brewed a single cup using a single recipe vector $\mathbf{x}$ (Column Tea). What happens when a canteen needs to prepare an entire menu of different dishes?
-  </p>
-
-  <div style="display: flex; gap: 16px; margin: 16px 0;">
-<div style="flex: 1.1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #2563EB; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #1D4ED8; font-size: 15px;">🏺 The Profile Matrix $A$</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-Rows record measured properties; columns represent ingredients:
-<br>• <b>Row 1:</b> Cost (₹)
-<br>• <b>Row 2:</b> Calories (kcal)
-<br>• <b>Row 3:</b> Protein (g)
-<br>• <b>Columns:</b> Rice, Paneer, Vegetables
-</p>
-</div>
-
-<div style="flex: 1.1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #D97706; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #B45309; font-size: 15px;">📖 The Recipe Book Matrix $B$</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-Multiple recipe column vectors placed side by side:
-<br>• <b>Column 1:</b> Dish 1 (Rice & Veg Bowl)
-<br>• <b>Column 2:</b> Dish 2 (Paneer Fried Rice)
-<br>• <b>Column 3:</b> Dish 3 (Paneer Stack)
-</p>
-</div>
-  </div>
-
-  <div style="background-color: #EFF6FF; border-left: 5px solid #2563EB; padding: 12px 18px; border-radius: 6px; margin-top: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #1D4ED8; font-size: 15px; font-weight: bold;">💡 Two Views of the Exact Same Product $AB$:</h4>
-<p style="margin: 0; font-size: 13.5px; color: #1E40AF; line-height: 1.6;">
-      • <b>Columns of $AB$:</b> Each column represents one finished dish evaluated across all properties ($A \cdot \mathbf{cv}_j$).
-<br>• <b>Rows of $AB$:</b> Each row tracks one property across the entire menu ($(\text{Row}_i A) \cdot B$).
-<br>• <b>Dimensional Match:</b> $(\text{properties} \times \text{ingredients}) \times (\text{ingredients} \times \text{dishes}) = (\text{properties} \times \text{dishes})$.
-</p>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-canteen-menu">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🍽️</div>
-      <div class="sim-title-group">
-        <h3>Canteen Menu Multi-Recipe Matrix Multiplication</h3>
-        <p>A (Properties × Ingredients) · B (Ingredients × Dishes) = C (Properties × Dishes)</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE MULTIPLICATION</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 16px;">
-      <div class="chip-toggle-group">
-        <button class="chip-btn canteen-view-btn active" data-view="column">Column View: Finished Dishes</button>
-        <button class="chip-btn canteen-view-btn" data-view="row">Row View: Property Across Menu</button>
-      </div>
-      <div style="display: flex; gap: 14px; flex-wrap: wrap;">
-        <div class="slider-control-group" style="min-width: 140px;">
-          <div class="slider-label-row"><label>Dish 1 Rice:</label></div>
-          <input type="range" id="canteen-d1-rice" min="0" max="3" step="0.5" value="1.0" class="sim-slider">
-        </div>
-        <div class="slider-control-group" style="min-width: 140px;">
-          <div class="slider-label-row"><label>Dish 2 Paneer:</label></div>
-          <input type="range" id="canteen-d2-paneer" min="0" max="3" step="0.5" value="1.0" class="sim-slider">
-        </div>
-        <div class="slider-control-group" style="min-width: 140px;">
-          <div class="slider-label-row"><label>Dish 3 Paneer:</label></div>
-          <input type="range" id="canteen-d3-paneer" min="0" max="3" step="0.5" value="2.0" class="sim-slider">
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="canteen-canvas" height="280" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="canteen-status">
-    <span>Inspecting matrix multiplication perspectives...</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-55">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #1E3A8A; font-size: 20px; font-weight: 800;">
-5. The Mathematical Skeleton Survives: From Dish Menus to Color Palettes
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 10px 0;">
-The physical objects change, but the mathematical structure remains identical:
-  </p>
-
-  <div style="overflow-x: auto; margin: 14px 0;">
-<table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
-<thead>
-<tr style="background-color: #F1F5F9; border-bottom: 2px solid #CBD5E1;">
-          <th style="padding: 10px 14px; color: #1E293B;">Domain</th>
-          <th style="padding: 10px 14px; color: #1E293B;">Left Matrix ($A$ or $C$)</th>
-          <th style="padding: 10px 14px; color: #1E293B;">Right Matrix ($B$ or $D$)</th>
-          <th style="padding: 10px 14px; color: #1E293B;">Product ($AB$ or $CD$)</th>
-</tr>
-</thead>
-<tbody>
-<tr style="border-bottom: 1px solid #E2E8F0;">
-          <td style="padding: 10px 14px; font-weight: bold; color: #B45309;">Canteen Kitchen</td>
-          <td style="padding: 10px 14px;">Ingredient profiles (properties $\times$ ingredients)</td>
-          <td style="padding: 10px 14px;">Dish recipes (ingredients $\times$ dishes)</td>
-          <td style="padding: 10px 14px; font-weight: bold;">Finished menu (properties $\times$ dishes)</td>
-</tr>
-<tr>
-          <td style="padding: 10px 14px; font-weight: bold; color: #2563EB;">Color Studio</td>
-          <td style="padding: 10px 14px;">Base-light profiles (RGB $\times$ base lights)</td>
-          <td style="padding: 10px 14px;">Palette recipes (base lights $\times$ swatches)</td>
-          <td style="padding: 10px 14px; font-weight: bold;">Finished palette (RGB $\times$ swatches)</td>
-</tr>
-</tbody>
-</table>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-light-blending">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">💡</div>
-      <div class="sim-title-group">
-        <h3>Stage Light Matrix Palette Blending</h3>
-        <p>Base Light Matrix C (3×2) · Palette Recipe D (2×3) = CD (3×3 Color Swatches)</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE COLOR BLEND</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 20px;">
-      <div class="slider-control-group" style="flex: 1; min-width: 200px;">
-        <div class="slider-label-row"><label>Swatch 2 Amber Ratio:</label></div>
-        <input type="range" id="light-s2-amber" min="0" max="1" step="0.1" value="0.5" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 200px;">
-        <div class="slider-label-row"><label>Swatch 2 Cyan Ratio:</label></div>
-        <input type="range" id="light-s2-cyan" min="0" max="1" step="0.1" value="0.5" class="sim-slider">
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="light-swatch-canvas" height="240" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="light-status">
-    <span>Blending base lights into full palette...</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-57">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #1E3A8A; font-size: 20px; font-weight: 800;">
-6. Mathematical Invariants & The $8 \times 8$ Scale-Up Challenge
-  </h2>
-
-  <h4 style="margin: 12px 0 6px 0; color: #0F172A; font-size: 15.5px;">Challenge: Can Every Shape Be Reached by Permutations Alone?</h4>
-  <p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0 0 10px 0;">
-Suppose you are permitted to use only row-permutation and column-permutation matrices (no zero-inserting shifts). Can you transform the $2 \times 2$ center block into a plus shape?
-  </p>
-
-  <div style="background-color: #FEF2F2; border: 1px solid #FECACA; border-left: 5px solid #EF4444; padding: 12px 18px; border-radius: 6px; margin: 12px 0;">
-<b style="color: #991B1B; font-size: 14.5px;">The Invariant Proof:</b>
-<ul style="margin: 6px 0 0 0; padding-left: 20px; font-size: 13.5px; color: #7F1D1D; line-height: 1.5;">
-<li><b>Center Block $X_0$ row counts:</b> $[0, 2, 2, 0]$ (Multiset: $\{0, 0, 2, 2\}$).</li>
-<li><b>Plus-shaped target row counts:</b> $[0, 1, 2, 1]$ or $[1, 2, 1, 0]$ (Multiset contains $1$s).</li>
-<li><b>Conclusion:</b> Permutation matrices merely reorder rows and columns. They can never change the multiset of row sums or column sums. Therefore, it is <b>mathematically impossible</b> to create the plus shape via permutations alone.</li>
-</ul>
-  </div>
-
-  <h4 style="margin: 18px 0 6px 0; color: #0F172A; font-size: 15.5px;">Scaling Up: The $8 \times 8$ Image Challenge</h4>
-  <p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0;">
-To shift a centered $4 \times 4$ block upward by 2 rows and leftward by 2 columns in an $8 \times 8$ frame:
-<br>• $P_{\uparrow 2} = U^2$ (shifts rows up by 2 on the left).
-<br>• $Q_{\leftarrow 2} = L^2$ (shifts columns left by 2 on the right).
-  </p>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-pixel-shifter">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🔲</div>
-      <div class="sim-title-group">
-        <h3>8×8 Matrix Pixel Shifter Studio</h3>
-        <p>P(up) · X · Q(left): Pre-multiplication shifts rows, post-multiplication shifts columns</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE 8x8 GRID</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 20px;">
-      <div class="slider-control-group" style="flex: 1; min-width: 200px;">
-        <div class="slider-label-row"><label>Shift Up (P):</label></div>
-        <input type="range" id="pixel-shift-up" min="0" max="4" step="1" value="2" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 200px;">
-        <div class="slider-label-row"><label>Shift Left (Q):</label></div>
-        <input type="range" id="pixel-shift-left" min="0" max="4" step="1" value="2" class="sim-slider">
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="pixel-shifter-canvas" height="280" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="pixel-status">
-    <span>Adjust sliders to apply row and column shift permutation matrices.</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-59">
-<div style="text-align: center; margin: 40px 0;">
-<span style="background-color: #e0e0e0; color: #555; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 13px;">
-        ✔ END OF MODULE 2 — PROCEED TO EXERCISES BELOW
-</span>
-</div>
-<hr style="border: 1px dashed #ccc;">
-</div>
-<div class="theory-block" id="sec-60">
-<div style="background-color: #FFF7ED; border-left: 6px solid #F97316; border-radius: 8px; padding: 20px 25px; margin: 20px 0; border: 1px solid #FFEDD5;">
-
-<h2 style="color: #C2410C; margin-top: 0; margin-bottom: 15px; font-size: 20px;">✍️ Pen-and-Paper Assignment & Conceptual Analysis</h2>
-
-<h3 style="color: #EA580C; margin-top: 15px; margin-bottom: 8px; font-size: 16px;">📝 Question 1: Dimension Compatibility & Operation Limits</h3>
-
-Consider the matrices:
-
-<div style="background-color: #FFEDD5; padding: 10px 15px; border-radius: 6px; font-family: monospace; text-align: center; font-size: 15px; margin: 10px 0; color: #7C2D12;">
-A = <b>[2 × 3]</b> &nbsp;&nbsp;&nbsp;&nbsp; B = <b>[3 × 3]</b> &nbsp;&nbsp;&nbsp;&nbsp; C = <b>[3 × 2]</b>
-</div>
-
-* **Task 1:** Write down which of the following products exist: `AB`, `BA`, `AC`, and `CA`.
-* **Task 2:** For those products that exist, state the resulting output dimensions.
-* **Theoretical Analysis:** If $A$ is an $m \times n$ matrix and $B$ is a $p \times q$ matrix, why does the inner dimension condition $n = p$ dictate matrix compatibility? Explain in terms of vector dot products.
-
-<hr style="border: none; border-top: 1px dashed #FDBA74; margin: 18px 0;">
-
-<h3 style="color: #EA580C; margin-top: 10px; margin-bottom: 8px; font-size: 16px;">📝 Question 2: Scalar Operation Arithmetic</h3>
-
-Let matrix $A$ be a $3 \times 3$ matrix and matrix $B$ be a $3 \times 2$ matrix:
-
-$$A = \begin{bmatrix} 1 & 0 & 2 \\ -1 & 3 & 1 \\ 0 & 1 & 4 \end{bmatrix}, \quad B = \begin{bmatrix} 2 & 1 \\ 4 & 0 \\ 1 & 2 \end{bmatrix}$$
-
-* **Task 1:** Compute $C = AB$ manually on paper.
-* **Task 2:** How many total individual **scalar multiplications** were required to calculate the entire product matrix $C$? Derive a general formula for multiplying an $(m \times n)$ matrix by an $(n \times p)$ matrix.
-
-<hr style="border: none; border-top: 1px dashed #FDBA74; margin: 18px 0;">
-
-<h3 style="color: #EA580C; margin-top: 10px; margin-bottom: 8px; font-size: 16px;">📝 Question 3: Graph Paths via Matrix Powers</h3>
-
-Suppose a communications graph has the adjacency matrix $A$ representing direct 1-step links between 4 nodes:
-
-$$A = \begin{bmatrix} 0 & 1 & 0 & 1 \\ 1 & 0 & 1 & 1 \\ 0 & 1 & 0 & 1 \\ 1 & 1 & 1 & 0 \end{bmatrix}$$
-
-* **Task 1:** Without performing full matrix multiplication, explain what physical connection the entry $(A^3)_{1,3}$ represents.
-* **Task 2:** If $(A^2)_{i,j} = 0$, what does this tell us about the path distance between node $i$ and node $j$?
-
-</div>
-</div>
-<div class="theory-block" id="sec-61">
-<div style="background-color: #FFF7ED; border-left: 6px solid #F97316; border-radius: 8px; padding: 15px 20px; margin: 20px 0 10px 0; border: 1px solid #FFEDD5;">
-<h3 style="color: #C2410C; margin-top: 0; margin-bottom: 6px; font-size: 17px; display: flex; align-items: center; gap: 8px;">
-        🐍 Challenge 1: The Column-Way "Tea Recipe" Linear Combiner (Fill-in-the-Blanks)
-</h3>
-<p style="color: #7C2D12; margin: 0; font-size: 14px;">In this exercise, complete the Python script to multiply a matrix $A$ by a column vector $x$ using pure <b>Column Slicing</b> and linear combinations (no <code>@</code> operator!)[cite: 1].</p>
-</div>
-</div>
-
-<div class="exercise-card" id="ex-module-2a">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px;">
-    <h3 style="margin:0; font-size: 1.15rem; color: #f97316;">📝 Module 2 Exercise A: Ingredient Matrix Profile</h3>
-    <span style="background: rgba(249, 115, 22, 0.15); color: #f97316; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">HANDS-ON LAB</span>
-  </div>
-  <p>Given the ingredient matrix $A$ where rows represent [Cost, Calories, Protein] and recipe vector $\mathbf{x} = [2, 1, 3]^T$ (2 units rice, 1 unit paneer, 3 units veggies). Calculate the total cost, calories, and protein of this meal.</p>
-  <button class="toggle-solution-btn">💡 Reveal Solution & Python Code</button>
-  <div class="solution-content" style="display: none; margin-top: 15px; padding: 15px; background: rgba(99, 102, 241, 0.08); border-radius: var(--radius-sm); border: 1px solid var(--bg-card-border);">
-    <h4 style="margin-top:0; color:#10b981;">Mathematical Solution:</h4>
-    <p>Using Matrix-Vector multiplication: $$\mathbf{b} = A\mathbf{x} = \begin{bmatrix} 20 & 60 & 30 \\ 200 & 250 & 80 \\ 4 & 18 & 3 \end{bmatrix} \begin{bmatrix} 2 \\ 1 \\ 3 \end{bmatrix}$$</p>
-    <p>• Cost = $20(2) + 60(1) + 30(3) = 40 + 60 + 90 = ₹190$</p>
-    <p>• Calories = $200(2) + 250(1) + 80(3) = 400 + 250 + 240 = 890\text{ kcal}$</p>
-    <p>• Protein = $4(2) + 18(1) + 3(3) = 8 + 18 + 9 = 35\text{ g}$</p>
-    <pre style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto;"><code>import numpy as np
-
-A = np.array([[20.0, 60.0, 30.0], [200.0, 250.0, 80.0], [4.0, 18.0, 3.0]])
-x = np.array([2.0, 1.0, 3.0])
-
-meal_profile = A @ x
-print(f"Total Cost: ₹{meal_profile[0]}, Calories: {meal_profile[1]} kcal, Protein: {meal_profile[2]}g")</code></pre>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-63">
-<div style="background-color: #FFF7ED; border-left: 6px solid #F97316; border-radius: 8px; padding: 15px 20px; margin: 20px 0 10px 0; border: 1px solid #FFEDD5;">
-<h3 style="color: #C2410C; margin-top: 0; margin-bottom: 6px; font-size: 17px; display: flex; align-items: center; gap: 8px;">
-        🐍 Challenge 2: Network Path Counter via Adjacency Matrix Powers (Fill-in-the-Blanks)
-</h3>
-<p style="color: #7C2D12; margin: 0; font-size: 14px;">In this exercise, complete the script to build an adjacency graph matrix and calculate the total number of 2-step and 3-step paths between vertices[cite: 1].</p>
-</div>
-</div>
-
-<div class="exercise-card" id="ex-module-2b">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px;">
-    <h3 style="margin:0; font-size: 1.15rem; color: #f97316;">📝 Module 2 Exercise B: Network Adjacency Matrix & 2-Step Paths</h3>
-    <span style="background: rgba(249, 115, 22, 0.15); color: #f97316; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">GRAPH THEORY</span>
-  </div>
-  <p>For a 5-node transportation network with adjacency matrix $A$, why does entry $(i, j)$ of matrix $A^2 = A \times A$ compute the exact number of 2-step paths connecting node $i$ to node $j$?</p>
-  <button class="toggle-solution-btn">💡 Reveal Solution & Proof</button>
-  <div class="solution-content" style="display: none; margin-top: 15px; padding: 15px; background: rgba(99, 102, 241, 0.08); border-radius: var(--radius-sm); border: 1px solid var(--bg-card-border);">
-    <h4 style="margin-top:0; color:#10b981;">Algebraic Proof:</h4>
-    <p>By matrix multiplication definition: $$(A^2)_{ij} = \sum_{k=1}^5 A_{ik} A_{kj}$$</p>
-    <p>Notice that $A_{ik} A_{kj} = 1$ if and only if there is an edge from $i$ to $k$ ($A_{ik} = 1$) AND an edge from $k$ to $j$ ($A_{kj} = 1$). Summing over all intermediate nodes $k$ counts every valid 2-step route $i \to k \to j$!</p>
-    <pre style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto;"><code>import numpy as np
-
-# Sample 5-node graph adjacency matrix
-A = np.array([
-    [0, 1, 1, 0, 0],
-    [1, 0, 1, 1, 0],
-    [1, 1, 0, 1, 1],
-    [0, 1, 1, 0, 1],
-    [0, 0, 1, 1, 0]
-])
-
-A2 = A @ A
-print("2-step paths matrix A^2:
-", A2)</code></pre>
-  </div>
-</div>
-
-</section>
-<section id="module-3" class="lecture-module-section">
-<div class="theory-block" id="sec-65">
-<p><br></p>
-<div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 20px; border-radius: 10px; color: white; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-<h1 style="color: white; margin: 0; font-size: 28px;">MODULE 3: Vectors and their Properties</h1>
-</div>
-<hr style="height: 3px; background-color: #2a5298; border: none; margin-top: 15px; margin-bottom: 30px;">
-</div>
-<div class="theory-block" id="sec-66">
-<div style="background-color: #ECFDF5; border: 1px solid #A7F3D0; border-left: 6px solid #059669; padding: 16px 20px; border-radius: 8px; margin: 15px 0;">
-  <h4 style="margin: 0 0 8px 0; color: #065F46; font-size: 16px; font-weight: 700;">📌 By the End of This Module, You Will Be Able To:</h4>
-  <ul style="margin: 0; padding-left: 20px; color: #047857; font-size: 14.5px; line-height: 1.6;">
-<li>Recognise the exact same vector in arrow, ordered-pair, and column matrix notation.</li>
-<li>Add and scale vectors both algebraically and geometrically via the head-to-tail and parallelogram rules.</li>
-<li>Distinguish a single linear combination (one dish/color) from the entire span (the infinite menu/gamut).</li>
-<li>Reinterpret $Ax = b$ as an inverse synthesis question: <i>"Which weights combine the columns of $A$ to land exactly on target vector $b$?"</i></li>
-  </ul>
-</div>
-</div>
-<div class="theory-block" id="sec-67">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #059669; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #065F46; font-size: 20px; font-weight: 800;">
-The Three Perspectives on a Single Vector
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 14px 0;">
-When you encounter a vector in science and engineering, different disciplines describe it through different lenses, yet all three represent the exact same underlying mathematical reality:
-  </p>
-
-  <div style="display: flex; gap: 14px; margin: 16px 0;">
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #2563EB; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #1D4ED8; font-size: 15px; font-weight: bold;">🏹 1. Physics Perspective</h4>
-<p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0;">
-<b>"An arrow with magnitude and direction."</b><br>
-Notation: $\mathbf{v} = x\mathbf{i} + y\mathbf{j}$<br>
-It models a physical displacement, velocity, or force in continuous physical space.
-</p>
-</div>
-
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #10B981; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #047857; font-size: 15px; font-weight: bold;">💻 2. Computer Science Perspective</h4>
-<p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0;">
-<b>"An ordered numerical array or list."</b><br>
-Notation: $\mathbf{v} = (x, y)$ or <code>[x, y]</code><br>
-It stores structured feature coordinates, screen pixel offsets, or states in memory.
-</p>
-</div>
-
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #D97706; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #B45309; font-size: 15px; font-weight: bold;">📐 3. Mathematics Perspective</h4>
-<p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0;">
-<b>"An element of a vector space ($\mathbb{R}^2$)."</b><br>
-Notation: $\mathbf{v} = \begin{bmatrix} x \\ y \end{bmatrix}$<br>
-A column entity that obeys the axioms of scalar scaling and vector addition.
-</p>
-</div>
-  </div>
-
-  <div style="background-color: #FEFCE8; border: 1px solid #FEF08A; border-left: 5px solid #CA8A04; padding: 12px 18px; border-radius: 6px; margin-top: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #854D0E; font-size: 15px; font-weight: bold;">🎯 What to Explore and Observe in the Simulator:</h4>
-<ul style="margin: 0; padding-left: 20px; font-size: 13.5px; color: #713F12; line-height: 1.6;">
-<li><b>Vector Components ($x, y$):</b> Change the East ($x$) and North ($y$) displacement dials to see how all three views update in lockstep.</li>
-<li><b>Translation Invariance (The Core Observation):</b> Move the <i>Tail Offset</i> sliders. Notice that as the drone arrow shifts across the grid, the <b>magnitude, direction angle, ordered pair $(x, y)$, and column vector</b> remain completely unchanged! A vector is defined by its displacement, not its starting anchor point.</li>
-</ul>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-vector-2d">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">📍</div>
-      <div class="sim-title-group">
-        <h3>2D Vector Geometric Canvas: Components & Polar Angle</h3>
-        <p>Explore magnitude ||v||, angle θ, and Cartesian components (x, y)</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE VECTOR</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 20px;">
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>East / x Component:</label></div>
-        <input type="range" id="v2d-x" min="-5" max="5" step="0.5" value="2.0" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>North / y Component:</label></div>
-        <input type="range" id="v2d-y" min="-5" max="5" step="0.5" value="3.0" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>Tail Offset X:</label></div>
-        <input type="range" id="v2d-tx" min="-4" max="4" step="1" value="0.0" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>Tail Offset Y:</label></div>
-        <input type="range" id="v2d-ty" min="-4" max="4" step="1" value="0.0" class="sim-slider">
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="vector2d-canvas" height="380" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="vector2d-info">
-    <span>Inspecting vector magnitude and orientation...</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-69">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #1E3A8A; font-size: 20px; font-weight: 800;">
-The Geometry of Addition and Scaling in $\mathbb{R}^2$
-  </h2>
-
-
-  <p style="text-align: center; font-size: 16px; font-weight: bold; color: #0F172A; margin: 8px 0;">
-    $$\mathbf{u} = \begin{bmatrix} 3 \\ 1 \end{bmatrix}, \quad \mathbf{v} = \begin{bmatrix} 2 \\ 3 \end{bmatrix}$$
-  </p>
-
-  <div style="display: flex; gap: 16px; margin: 16px 0;">
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #BFDBFE; border-top: 4px solid #2563EB; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #1D4ED8; font-size: 15px;">➡️ Method 1: Head-to-Tail Rule</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-1. Draw vector $\mathbf{u}$ starting from the origin $(0, 0)$.<br>
-2. Attach the tail of vector $\mathbf{v}$ directly to the <b>tip (head) of $\mathbf{u}$</b>.<br>
-3. The sum $\mathbf{u} + \mathbf{v}$ is the straight arrow pointing from the start of $\mathbf{u}$ to the tip of $\mathbf{v}$.
-</p>
-</div>
-
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #FED7AA; border-top: 4px solid #EA580C; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #C2410C; font-size: 15px;">📐 Method 2: Parallelogram Law</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-1. Root both vectors $\mathbf{u}$ and $\mathbf{v}$ at the exact same origin $(0, 0)$.<br>
-2. Complete the geometric parallelogram by drawing parallel opposite sides.<br>
-3. The diagonal running from the origin to the opposite vertex represents the sum $\mathbf{u} + \mathbf{v}$.
-</p>
-</div>
-  </div>
-
-  <div style="background-color: #FEFCE8; border-left: 5px solid #EAB308; padding: 12px 18px; border-radius: 6px; margin-top: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #854D0E; font-size: 15px; font-weight: bold;">🔍 Geometric Scalar Multiplication</h4>
-<p style="margin: 0; font-size: 13.5px; color: #713F12; line-height: 1.5;">
-Multiplying a vector $\mathbf{v}$ by a scalar $c$:<br>
-      • If $c > 1$, it <b>stretches</b> along its line of action.<br>
-      • If $0 < c < 1$, it <b>compresses</b> without changing orientation.<br>
-      • If $c < 0$, it <b>reverses direction by $180^\circ$</b> and scales by $|c|$.
-</p>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-vector-add">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">➕</div>
-      <div class="sim-title-group">
-        <h3>Vector Addition: Head-to-Tail vs. Parallelogram Law</h3>
-        <p>Observe how vectors compose physically and algebraically: u + c·v</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE GEOMETRY</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 16px;">
-      <div class="chip-toggle-group">
-        <button class="chip-btn vadd-toggle-btn active" data-method="head-to-tail">Head-to-Tail Rule</button>
-        <button class="chip-btn vadd-toggle-btn" data-method="parallelogram">Parallelogram Law</button>
-      </div>
-      <div style="display: flex; gap: 14px; flex-wrap: wrap;">
-        <div class="slider-control-group" style="min-width: 130px;">
-          <div class="slider-label-row"><label>u₁ (x):</label></div>
-          <input type="range" id="vadd-ux" min="-4" max="5" step="0.5" value="3.0" class="sim-slider">
-        </div>
-        <div class="slider-control-group" style="min-width: 130px;">
-          <div class="slider-label-row"><label>u₂ (y):</label></div>
-          <input type="range" id="vadd-uy" min="-4" max="5" step="0.5" value="1.0" class="sim-slider">
-        </div>
-        <div class="slider-control-group" style="min-width: 130px;">
-          <div class="slider-label-row"><label>v₁ (x):</label></div>
-          <input type="range" id="vadd-vx" min="-4" max="5" step="0.5" value="2.0" class="sim-slider">
-        </div>
-        <div class="slider-control-group" style="min-width: 130px;">
-          <div class="slider-label-row"><label>v₂ (y):</label></div>
-          <input type="range" id="vadd-vy" min="-4" max="5" step="0.5" value="3.0" class="sim-slider">
-        </div>
-        <div class="slider-control-group" style="min-width: 130px;">
-          <div class="slider-label-row"><label>Scale v (c):</label></div>
-          <input type="range" id="vadd-c" min="-2" max="2.5" step="0.25" value="1.0" class="sim-slider">
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="vector-add-canvas" height="380" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="vector-add-status">
-    <span>Adjust vector parameters to observe vector addition.</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-71">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #1E3A8A; font-size: 20px; font-weight: 800;">
-2. The Two Moves We Keep Repeating: Add and Scale
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-No matter what domain we work in, linear algebra reduces to the exact same two algebraic actions:
-  </p>
-
-  <div style="overflow-x: auto; margin: 14px 0;">
-<table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left;">
-<thead>
-<tr style="background-color: #F1F5F9; border-bottom: 2px solid #CBD5E1;">
-          <th style="padding: 10px 12px; color: #1E293B;">World</th>
-          <th style="padding: 10px 12px; color: #1E293B;">Objects (Vectors)</th>
-          <th style="padding: 10px 12px; color: #1E293B;">Scaling ($c\mathbf{v}$)</th>
-          <th style="padding: 10px 12px; color: #1E293B;">Addition ($\mathbf{u} + \mathbf{v}$)</th>
-</tr>
-</thead>
-<tbody>
-<tr style="border-bottom: 1px solid #E2E8F0;">
-          <td style="padding: 10px 12px; font-weight: bold; color: #047857;">Drone Motion</td>
-          <td style="padding: 10px 12px;">Displacements in $\mathbb{R}^2$</td>
-          <td style="padding: 10px 12px;">Speed multiplier / battery boost</td>
-          <td style="padding: 10px 12px;">Sequential flight legs</td>
-</tr>
-<tr style="border-bottom: 1px solid #E2E8F0;">
-          <td style="padding: 10px 12px; font-weight: bold; color: #2563EB;">Color Studio</td>
-          <td style="padding: 10px 12px;">RGB intensity triplets</td>
-          <td style="padding: 10px 12px;">Bulb dimmer dial</td>
-          <td style="padding: 10px 12px;">Superposed light beams</td>
-</tr>
-<tr style="border-bottom: 1px solid #E2E8F0;">
-          <td style="padding: 10px 12px; font-weight: bold; color: #7C3AED;">Acoustics</td>
-          <td style="padding: 10px 12px;">Audio sample vectors in $\mathbb{R}^N$</td>
-          <td style="padding: 10px 12px;">Track volume gain</td>
-          <td style="padding: 10px 12px;">Simultaneous playback</td>
-</tr>
-<tr>
-          <td style="padding: 10px 12px; font-weight: bold; color: #B45309;">Canteen Kitchen</td>
-          <td style="padding: 10px 12px;">Ingredient profiles</td>
-          <td style="padding: 10px 12px;">Portion multiplier</td>
-          <td style="padding: 10px 12px;">Combined dish bowl</td>
-</tr>
-</tbody>
-</table>
-  </div>
-
-  <h3 style="margin: 16px 0 8px 0; color: #0F172A; font-size: 16px; font-weight: bold;">
-The 8 Vector Space Rules (Why Order and Grouping Behave Nicely)
-  </h3>
-  <p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0 0 10px 0;">
-These rules are not arbitrary definitions. They guarantee that our geometric and physical intuition holds universally:
-  </p>
-
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;">
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px;">
-<b style="color: #1D4ED8;">1. Commutativity:</b> $\mathbf{v} + \mathbf{w} = \mathbf{w} + \mathbf{v}$<br>
-<span style="font-size: 12.5px; color: #64748B;">Flight path order doesn't change final landing spot.</span>
-</div>
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px;">
-<b style="color: #1D4ED8;">2. Associativity:</b> $(\mathbf{u} + \mathbf{v}) + \mathbf{w} = \mathbf{u} + (\mathbf{v} + \mathbf{w})$<br>
-<span style="font-size: 12.5px; color: #64748B;">Grouping waypoints yields identical destinations.</span>
-</div>
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px;">
-<b style="color: #1D4ED8;">3. Vector Distributivity:</b> $c(\mathbf{v} + \mathbf{w}) = c\mathbf{v} + c\mathbf{w}$<br>
-<span style="font-size: 12.5px; color: #64748B;">Scaling combined flight equals scaling each leg.</span>
-</div>
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px;">
-<b style="color: #1D4ED8;">4. Scalar Distributivity:</b> $(c + d)\mathbf{v} = c\mathbf{v} + d\mathbf{v}$<br>
-<span style="font-size: 12.5px; color: #64748B;">Adding gains together equals summing scaled copies.</span>
-</div>
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px;">
-<b style="color: #1D4ED8;">5. Additive Identity:</b> $\mathbf{v} + \mathbf{0} = \mathbf{v}$<br>
-<span style="font-size: 12.5px; color: #64748B;">The "do nothing" vector (silence, darkness, zero shift).</span>
-</div>
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 6px;">
-<b style="color: #1D4ED8;">6. Additive Inverse:</b> $\mathbf{v} + (-\mathbf{v}) = \mathbf{0}$<br>
-<span style="font-size: 12.5px; color: #64748B;">The "undo" command (return to origin, phase cancellation).</span>
-</div>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-axiom-tester">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">📜</div>
-      <div class="sim-title-group">
-        <h3>Vector Space Axiom Laboratory</h3>
-        <p>Interactive verification of the fundamental Vector Space Axioms</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> AXIOM CHECKER</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 14px;">
-      <select id="axiom-select" class="custom-select" style="padding: 8px 12px; border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--bg-card-border); font-family: var(--font-body); flex: 1; min-width: 300px;">
-        <option value="comm">Axiom 1: Commutativity (v + w = w + v)</option>
-        <option value="dist_vec">Axiom 2: Vector Distributivity (c(v + w) = cv + cw)</option>
-        <option value="dist_scal">Axiom 3: Scalar Distributivity ((c + d)v = cv + dv)</option>
-        <option value="inv">Axiom 4: Additive Inverse (v + (-v) = 0)</option>
-      </select>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <div class="number-input-group"><label>v₁</label><input type="number" id="axiom-vx" value="2.0" step="0.5"></div>
-        <div class="number-input-group"><label>v₂</label><input type="number" id="axiom-vy" value="1.0" step="0.5"></div>
-        <div class="number-input-group"><label>w₁</label><input type="number" id="axiom-wx" value="1.0" step="0.5"></div>
-        <div class="number-input-group"><label>w₂</label><input type="number" id="axiom-wy" value="3.0" step="0.5"></div>
-        <div class="number-input-group"><label>Scalar c</label><input type="number" id="axiom-c" value="2.0" step="0.5"></div>
-        <div class="number-input-group"><label>Scalar d</label><input type="number" id="axiom-d" value="1.5" step="0.5"></div>
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container" style="padding: 25px 20px;">
-    <div id="axiom-status-card" style="background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--bg-card-border); padding: 20px;"></div>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-73">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #D97706; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #92400E; font-size: 20px; font-weight: 800;">
-One Recipe vs. The Infinite Menu: Linear Combination vs. Span
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-Do not confuse these two ideas:
-  </p>
-
-  <div style="display: flex; gap: 16px; margin: 16px 0;">
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #3B82F6; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #1D4ED8; font-size: 15.5px;">📍 A Linear Combination (One Point)</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-You lock in <b>one specific choice of weights</b>:
-<br>
-        $$\mathbf{y} = c_1 \mathbf{v}_1 + c_2 \mathbf{v}_2$$
-It produces <b>one single output vector</b> (one spot on the field, one brewed cup, one sound).
-</p>
-</div>
-
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #10B981; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #047857; font-size: 15.5px;">🌌 The Span (The Entire Universe)</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-You allow the weights $c_1, c_2$ to take <b>all possible values in $\mathbb{R}$</b>:
-<br>
-        $$\text{Span}\{\mathbf{v}_1, \mathbf{v}_2\} = \{c_1 \mathbf{v}_1 + c_2 \mathbf{v}_2 \mid c_1, c_2 \in \mathbb{R}\}$$
-It is the entire set of everything reachable.
-</p>
-</div>
-  </div>
-
-  <div style="background-color: #FEFCE8; border: 1px solid #FEF08A; border-left: 5px solid #CA8A04; padding: 14px 18px; border-radius: 6px; margin-top: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #854D0E; font-size: 15px; font-weight: bold;">🐒 Thought Experiment: The Curious Monkey and the RC-Car Joystick</h4>
-<p style="margin: 0; font-size: 13.5px; color: #713F12; line-height: 1.5;">
-An RC car has only two movement motors: vector $\mathbf{v}$ and vector $\mathbf{w}$.
-<br>• If you choose $c_1 = 3$ and $c_2 = 4$, the car parks at $3\mathbf{v} + 4\mathbf{w}$ (one linear combination).
-<br>• If an infinite monkey sits on the joystick choosing numbers at random all day, <b>what total territory can the car cover?</b>
-<br>• If $\mathbf{v}$ and $\mathbf{w}$ point in independent directions, the monkey can reach <b>the entire 2D plane ($\mathbb{R}^2$)</b>!
-<br>• But what if $\mathbf{w}$ is just a scaled multiple of $\mathbf{v}$ (collinear)? The monkey is trapped on a single 1D line forever!
-</p>
-  </div>
-</div>
-</div>
-<div class="theory-block" id="sec-74">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #059669; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #065F46; font-size: 20px; font-weight: 800;">
-The Geometry of 2D Span: Continuous Plane vs. 1D Line Trap
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-The span of a set of vectors is <b>not a set of disconnected points</b>. Because scalars $c_1, c_2$ vary over <i>all real numbers</i>, the span forms a continuous geometric object:
-  </p>
-
-  <div style="display: flex; gap: 16px; margin: 14px 0;">
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #10B981; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #047857; font-size: 15px;">🟢 Linearly Independent Case</h4>
-<p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0;">
-Vectors $\mathbf{v}$ and $\mathbf{w}$ point in different directions (not parallel).
-<br>
-        $$\text{Span}\{\mathbf{v}, \mathbf{w}\} = \text{Entire 2D Plane } \mathbb{R}^2$$
-Every single coordinate $(x, y)$ in the plane can be reached.
-</p>
-</div>
-
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #EF4444; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #B91C1C; font-size: 15px;">🔴 Linearly Dependent Case</h4>
-<p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0;">
-One vector is a scalar multiple of the other ($\mathbf{w} = k\mathbf{v}$).
-<br>
-        $$\text{Span}\{\mathbf{v}, \mathbf{w}\} = \text{1D Line through Origin}$$
-The span collapses. The car is trapped on a single straight track and cannot reach any points off that line.
-</p>
-</div>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-span-2d">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🌐</div>
-      <div class="sim-title-group">
-        <h3>2D Continuous Subspace Span Synthesizer</h3>
-        <p>All linear combinations c₁·v + c₂·w form the Span. Observe when the span fills all ℝ² vs when it is trapped on a 1D line</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> LIVE SPAN</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 14px;">
-      <select id="span2d-preset" class="custom-select" style="padding: 8px 12px; border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--bg-card-border); font-family: var(--font-body); flex: 1; min-width: 280px;">
-        <option value="indep">Independent: [2, 0]ᵀ and [1, 2]ᵀ (Fills Entire ℝ²)</option>
-        <option value="collinear">Dependent: [2, 1]ᵀ and [4, 2]ᵀ (Trapped on 1D Line)</option>
-        <option value="opposite">Dependent: [3, -1]ᵀ and [-3, 1]ᵀ (Opposite Directions)</option>
-      </select>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <div class="number-input-group"><label>v₁</label><input type="number" id="span2d-vx" value="2.0" step="0.5"></div>
-        <div class="number-input-group"><label>v₂</label><input type="number" id="span2d-vy" value="0.0" step="0.5"></div>
-        <div class="number-input-group"><label>w₁</label><input type="number" id="span2d-wx" value="1.0" step="0.5"></div>
-        <div class="number-input-group"><label>w₂</label><input type="number" id="span2d-wy" value="2.0" step="0.5"></div>
-      </div>
-    </div>
-    <div class="controls-row" style="margin-top: 10px; flex-wrap: wrap; gap: 20px;">
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>Weight c₁ (v):</label></div>
-        <input type="range" id="span2d-c1" min="-3" max="3" step="0.25" value="1.5" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>Weight c₂ (w):</label></div>
-        <input type="range" id="span2d-c2" min="-3" max="3" step="0.25" value="1.0" class="sim-slider">
-      </div>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="span2d-canvas" height="380" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="span2d-status">
-    <span>Testing linear independence and span dimension...</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-76">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #7C3AED; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #5B21B6; font-size: 20px; font-weight: 800;">
-The Complete Spectrum of Span in 3D Space ($\mathbb{R}^3$)
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-The geometry of what vectors can reach depends on how many independent directional arrows you are given:
-  </p>
-
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0;">
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #EF4444; border-radius: 6px; padding: 12px;">
-<h4 style="margin: 0 0 4px 0; color: #DC2626; font-size: 14.5px;">Case 1: 1D Line Trap (1 Direction)</h4>
-<p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.5;">
-Vectors point in the exact same line ($\mathbf{v} = k\mathbf{u}$).
-        $$\text{Span}\{\mathbf{u}, \mathbf{v}\} = \text{1D Line}$$
-The system can only slide forward and backward along a rail.
-</p>
-</div>
-
- <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #F59E0B; border-radius: 6px; padding: 12px;">
-<h4 style="margin: 0 0 4px 0; color: #D97706; font-size: 14.5px;">Case 2: 2D Plane Trap (2 Directions)</h4>
-<p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.5;">
-Two vectors point in different directions, but lack a 3rd dimension.
-        $$\text{Span}\{\mathbf{u}, \mathbf{v}\} = \text{2D Flat Sheet in } \mathbb{R}^3$$
-Any target point with altitude off this sheet has a gap.
-</p>
-</div>
-
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #10B981; border-radius: 6px; padding: 12px;">
-<h4 style="margin: 0 0 4px 0; color: #059669; font-size: 14.5px;">Case 3: Full 3D Room (3 Independent Directions)</h4>
-<p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.5;">
-A third vector $\mathbf{w}$ steps out of the plane!
-        $$\text{Span}\{\mathbf{u}, \mathbf{v}, \mathbf{w}\} = \text{Entire } \mathbb{R}^3$$
-The gap collapses to 0. <b>Every</b> 3D target point is reachable.
-</p>
-</div>
-
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #6366F1; border-radius: 6px; padding: 12px;">
-<h4 style="margin: 0 0 4px 0; color: #4F46E5; font-size: 14.5px;">Case 4: Redundant Vectors (Coplanar Trio)</h4>
-<p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.5;">
-You have 3 vectors, but $\mathbf{w}$ lies inside the plane of $\mathbf{u}$ and $\mathbf{v}$.
-        $$\text{Span}\{\mathbf{u}, \mathbf{v}, \mathbf{w}\} = \text{Still a 2D Plane!}$$
-The 3rd vector adds zero new territory.
-</p>
-</div>
-  </div>
-
-  <div style="background-color: #FEFCE8; border: 1px solid #FEF08A; border-left: 5px solid #CA8A04; padding: 12px 18px; border-radius: 6px; margin-top: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #854D0E; font-size: 15px; font-weight: bold;">🎯 How to Use the Unified 3D Lab:</h4>
-<p style="margin: 0; font-size: 13.5px; color: #713F12; line-height: 1.6;">
-      • Select a geometric scenario from the dropdown to compare <b>1D Lines</b>, <b>2D Planes</b>, <b>Redundant Coplanar Vectors</b>, and <b>Full 3D Volume Spans</b>.<br>
-      • Rotate, tilt, and zoom the 3D space with your mouse.<br>
-      • Adjust the target coordinate sliders. Notice how the <b>gap indicator</b> shows whether the system $A\mathbf{x} = \mathbf{b}$ is solvable or impossible.
-</p>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-span-3d">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🧊</div>
-      <div class="sim-title-group">
-        <h3>3D Subspace Span Explorer in ℝ³</h3>
-        <p>Interactive 3D geometry of vector spans: 1D Line, 2D Plane, or Full 3D Space</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> 3D PLOTLY</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row">
-      <label for="span3d-preset" style="font-weight: 600;">Subspace Scenario:</label>
-      <select id="span3d-preset" class="custom-select" style="padding: 8px 12px; border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--bg-card-border); font-family: var(--font-body); flex: 1; max-width: 480px;">
-        <option value="line">Case 1: 1D Line Trap (u & v Collinear)</option>
-        <option value="plane">Case 2: 2D Plane Trap (u & v Independent)</option>
-        <option value="redundant">Case 3: Redundant Trio (3 Vectors, but w = u + v)</option>
-        <option value="volume">Case 4: Full 3D Volume Span (3 Linearly Independent Vectors)</option>
-      </select>
-    </div>
-  </div>
-  <div class="sim-stage-container" style="height: 480px;">
-    <div id="plotly-3d-span" style="width: 100%; height: 100%;"></div>
-  </div>
-  <div class="sim-status-banner" id="span3d-status">
-    <span>Loading 3D vector span...</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-78">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #1E3A8A; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #1E3A8A; font-size: 20px; font-weight: 800;">
-Solving $Ax = b$: Stacking Columns to Reach the Target
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-Whether you are blending RGB light beams or solving simultaneous equations, the mathematical structure is identical:
-  </p>
-
-  <div style="display: flex; gap: 16px; margin: 16px 0;">
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #3B82F6; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #1D4ED8; font-size: 15px;">🎨 The Color Synthesis Question</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-Given two base lights $\mathbf{c}_1 = \begin{bmatrix}1\\0\\1\end{bmatrix}$ and $\mathbf{c}_2 = \begin{bmatrix}0\\1\\1\end{bmatrix}$, find weights to synthesize target $\mathbf{b} = \begin{bmatrix}1\\2\\3\end{bmatrix}$:
-        $$x_1 \begin{bmatrix} 1 \\ 0 \\ 1 \end{bmatrix} + x_2 \begin{bmatrix} 0 \\ 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 1 \\ 2 \\ 3 \end{bmatrix} \iff \begin{bmatrix} 1 & 0 \\ 0 & 1 \\ 1 & 1 \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} = \begin{bmatrix} 1 \\ 2 \\ 3 \end{bmatrix}$$
-</p>
-</div>
-
-<div style="flex: 1; background: #FFFFFF; border: 1px solid #E2E8F0; border-top: 4px solid #10B981; border-radius: 6px; padding: 14px;">
-<h4 style="margin: 0 0 8px 0; color: #047857; font-size: 15px;">📐 The Simultaneous Equations Question</h4>
-<p style="font-size: 13.5px; color: #475569; line-height: 1.5; margin: 0;">
-Solve the high-school system:
-        $$\begin{cases} 2x + y = 7 \\ x - y = 2 \end{cases}$$
-Rewritten as a column combination:
-        $$x \begin{bmatrix} 2 \\ 1 \end{bmatrix} + y \begin{bmatrix} 1 \\ -1 \end{bmatrix} = \begin{bmatrix} 7 \\ 2 \end{bmatrix}$$
-</p>
-</div>
-  </div>
-
-  <div style="background-color: #FEFCE8; border-left: 5px solid #EAB308; padding: 12px 18px; border-radius: 6px; margin-top: 14px;">
-<h4 style="margin: 0 0 6px 0; color: #854D0E; font-size: 15px; font-weight: bold;">💡 The Core Insight</h4>
-<p style="margin: 0; font-size: 13.5px; color: #713F12; line-height: 1.5;">
-Matrix multiplication asks: <i>"Given the recipe $x$, what output is produced?"</i><br>
-Solving $Ax = b$ asks the inverse: <i>"Given target output $b$, what recipe $x$ combines the columns of $A$ to reach it?"</i>
-</p>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-column-recon">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🎯</div>
-      <div class="sim-title-group">
-        <h3>Column Combination Target Reconstructor</h3>
-        <p>Columns col₁ = [2, 1]ᵀ, col₂ = [1, -1]ᵀ. Reconstruct target vector b = [7, 2]ᵀ</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> TARGET GAME</div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 20px;">
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>Weight x:</label></div>
-        <input type="range" id="recon-x" min="-1" max="5" step="0.25" value="1.0" class="sim-slider">
-      </div>
-      <div class="slider-control-group" style="flex: 1; min-width: 180px;">
-        <div class="slider-label-row"><label>Weight y:</label></div>
-        <input type="range" id="recon-y" min="-2" max="4" step="0.25" value="1.0" class="sim-slider">
-      </div>
-      <button id="recon-solve-btn" class="control-btn secondary" style="align-self: flex-end; padding: 10px 18px;">💡 Snap to Exact Solution (x=3, y=1)</button>
-    </div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="recon-canvas" height="380" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="recon-status">
-    <span>Adjust weights to reconstruct the target vector!</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-80">
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #DC2626; padding: 22px 26px; border-radius: 8px; margin: 20px 0;">
-  <h2 style="margin: 0 0 12px 0; color: #991B1B; font-size: 20px; font-weight: 800;">
-The $5 \times 5$ System: Why Manual Elimination Breaks Down
-  </h2>
-
-  <p style="font-size: 15px; line-height: 1.6; color: #334155; margin: 0 0 12px 0;">
-Consider the system from Sheet 3 Page 14:
-  </p>
-  <p style="text-align: center; font-size: 14.5px; margin: 10px 0; color: #0F172A;">
-    $$\begin{bmatrix} 
-1 & 2 & 3 & 4 & 5 \\ 
-2 & 1 & 4 & 3 & 1 \\ 
-3 & 2 & 1 & 5 & 2 \\ 
-1 & 4 & 2 & 1 & 3 \\ 
-5 & 1 & 3 & 2 & 1 
-    \end{bmatrix} 
-    \begin{bmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \\ x_5 \end{bmatrix} = 
-    \begin{bmatrix} 15 \\ 11 \\ 13 \\ 11 \\ 12 \end{bmatrix}$$
-  </p>
-
-  <div style="background-color: #FEF2F2; border: 1px solid #FECACA; border-left: 5px solid #EF4444; padding: 14px 18px; border-radius: 6px; margin: 14px 0;">
-<h4 style="margin: 0 0 6px 0; color: #991B1B; font-size: 15px; font-weight: bold;">⚠️ Reflection: Use the Discomfort as Information (Sheet 3 Page 15)</h4>
-<ul style="margin: 0; padding-left: 20px; font-size: 13.5px; color: #7F1D1D; line-height: 1.6;">
-<li><b>What became difficult as dimensions grew?</b> Equations become entangled. Isolating one variable in Equation 1 and substituting it across four equations creates unwieldy rational fractions.</li>
-<li><b>What does the solution vector $\mathbf{x}$ actually tell us?</b> It gives the exact proportions of each column of $A$ required to build target $\mathbf{b}$.</li>
-<li><b>The need for Sheet 4:</b> We need a systematic, structured algorithm (Gaussian Elimination) rather than manual guesswork.</li>
-</ul>
-  </div>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-5x5-system">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">📊</div>
-      <div class="sim-title-group">
-        <h3>5×5 Linear System Column Decomposition Breakdown</h3>
-        <p>A₅×₅ · x = b₅×₅: High-dimensional column combination breakdown</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator"><span class="pulse-dot"></span> HIGH-D SOLVER</div>
-  </div>
-  <div class="sim-stage-container">
-    <canvas id="sys5x5-canvas" height="260" class="sim-canvas"></canvas>
-  </div>
-  <div class="sim-status-banner" id="sys5x5-status">
-    <span>Solved via matrix inversion.</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-82">
-<div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-top: 5px solid #059669; padding: 22px 26px; border-radius: 8px; margin-top: 30px;">
-  <h3 style="color: #065F46; margin: 0 0 10px 0; font-size: 19px; font-weight: 800;">
-    🏁 Module 3 Complete: One Recipe, Infinite Menu
-  </h3>
-
-  <p style="font-size: 14.5px; line-height: 1.6; color: #334155; margin: 0 0 14px 0;">
-You have mastered the foundational vocabulary of linear algebra:
-  </p>
-
-  <div style="background-color: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
-<ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #1E293B; line-height: 1.7;">
-<li><b>Vectors:</b> Represented as physical arrows, computer science arrays, or column elements of a vector space.</li>
-<li><b>Linear Combination:</b> Choosing one set of scalar weights to produce one output.</li>
-<li><b>Span:</b> The continuous geometry swept out by all possible linear combinations.</li>
-<li><b>Solving $Ax = b$:</b> An inverse inquiry asking whether target $b$ can be built from the columns of $A$.</li>
-</ul>
-  </div>
-
-  <p style="font-style: italic; color: #64748B; font-size: 13.5px; margin: 0; text-align: center;">
-Next up: <b>Lecture Sheet 4 — Gaussian Elimination, Pivots, and Systematic Row Operations!</b>
-  </p>
-</div>
-</div>
-<div class="theory-block" id="sec-83">
-<div style="background: linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%); padding: 24px 28px; border-radius: 10px; margin: 20px 0; box-shadow: 0 6px 12px -2px rgba(0,0,0,0.15);">
-  <span style="background-color: #EEF2FF; color: #3730A3; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px;">
-Module 1–3 Capstone Challenge
-  </span>
-  <h2 style="color: #FFFFFF; font-size: 24px; font-weight: 800; margin: 10px 0 6px 0;">
-    🎮 The Linear Alchemist: Cross-Domain Synthesis Studio
-  </h2>
-  <p style="color: #C7D2FE; font-size: 14.5px; margin: 0; line-height: 1.5;">
-Put theory into practice. Use your intuition of linear combinations, column synthesis ($Ax = b$), and dimensional span across light, motion, and 3D space.
-  </p>
-</div>
-
-<div style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-left: 6px solid #4F46E5; padding: 18px 22px; border-radius: 8px; margin: 15px 0;">
-  <h4 style="margin: 0 0 8px 0; color: #312E81; font-size: 16px; font-weight: bold;">Rules of the Studio:</h4>
-  <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #334155; line-height: 1.6;">
-<li><b>Level 1 (Color Synthesis):</b> Balance the light sliders $x_1$ and $x_2$ so that your blended spotlight matches the target swatch.</li>
-<li><b>Level 2 (Drone Navigation):</b> Steer the drone to the target star by scaling its two motor step vectors $\mathbf{u}$ and $\mathbf{v}$.</li>
-<li><b>Level 3 (Span Detective):</b> Determine if target $\mathbf{b}$ lies within the span of the basis vectors, or if it sits outside the accessible subspace.</li>
-  </ul>
-</div>
-</div>
-
-<div class="simulation-card" id="sim-detective-game">
-  <div class="sim-header">
-    <div class="sim-header-left">
-      <div class="sim-icon-badge">🕵️‍♂️</div>
-      <div class="sim-title-group">
-        <h3>Subspace Span Detective Challenge</h3>
-        <p>Test your intuition: Can target vectors be synthesized from given basis vectors?</p>
-      </div>
-    </div>
-    <div class="sim-live-indicator" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border-color: rgba(245, 158, 11, 0.3);">
-      <span class="pulse-dot" style="background: #f59e0b;"></span> <span id="game-score-badge">0 pts</span>
-    </div>
-  </div>
-  <div class="sim-controls-panel">
-    <div class="controls-row" style="flex-wrap: wrap; gap: 14px;">
-      <select id="game-level-select" class="custom-select" style="padding: 8px 12px; border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--bg-card-border); font-family: var(--font-body); flex: 1; min-width: 280px;">
-        <option value="color">Level 1: Stage Light Alchemist (RGB Blending)</option>
-        <option value="drone">Level 2: Drone Flight Navigation (Head-to-Tail)</option>
-        <option value="span3d">Level 3: Subspace Span Detective (3D Consistency)</option>
-      </select>
-      <div style="display: flex; gap: 14px; flex: 1; min-width: 260px;">
-        <div class="slider-control-group" style="flex: 1;">
-          <div class="slider-label-row"><label>Dial 1 (x₁):</label><span id="game-dial1-val">0.20</span></div>
-          <input type="range" id="game-dial1" min="0" max="1.2" step="0.05" value="0.2" class="sim-slider">
-        </div>
-        <div class="slider-control-group" style="flex: 1;">
-          <div class="slider-label-row"><label>Dial 2 (x₂):</label><span id="game-dial2-val">0.20</span></div>
-          <input type="range" id="game-dial2" min="0" max="1.2" step="0.05" value="0.2" class="sim-slider">
-        </div>
-      </div>
-      <button id="game-test-btn" class="control-btn" style="padding: 8px 18px; align-self: flex-end;">Verify & Claim Points</button>
-    </div>
-  </div>
-  <div class="sim-status-banner" id="game-status">
-    <span>Tune dials to hit the target vector and score points!</span>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-85">
-<div style="text-align: center; margin: 30px 0 20px 0;">
-<span style="background-color: #E2E8F0; color: #475569; font-weight: bold; font-size: 13px; padding: 6px 16px; border-radius: 20px; border: 1px solid #CBD5E1; letter-spacing: 0.5px;">
-        ✔ END OF MODULE 3 — PROCEED TO EXERCISES BELOW
-</span>
-</div>
-<hr style="border: none; height: 1px; background-color: #CBD5E1; margin-bottom: 25px;">
-</div>
-</section>
-<section id="module-exercises" class="lecture-module-section">
-<div class="theory-block" id="sec-86">
-<div style="background-color: #FFF7ED; border-left: 6px solid #F97316; border-radius: 8px; padding: 20px 25px; margin: 20px 0; border: 1px solid #FFEDD5;">
-
-<h2 style="color: #C2410C; margin-top: 0; margin-bottom: 15px; font-size: 20px;">✍️ Pen-and-Paper Assignment & Conceptual Analysis</h2>
-
-<h3 style="color: #EA580C; margin-top: 15px; margin-bottom: 8px; font-size: 16px;">📝 Question 1: Verifying Vector Space Axioms</h3>
-
-Consider the two vectors in $\mathbb{R}^2$ and the scalars $c$ and $d$:
-
-<div style="background-color: #FFEDD5; padding: 10px 15px; border-radius: 6px; font-family: monospace; text-align: center; font-size: 15px; margin: 10px 0; color: #7C2D12;">
-u = [4, -2]ᵀ &nbsp;&nbsp;&nbsp;&nbsp; v = [-1, 5]ᵀ &nbsp;&nbsp;&nbsp;&nbsp; c = 3 &nbsp;&nbsp;&nbsp;&nbsp; d = -2
-</div>
-
-* **Task 1:** Compute the left-hand side $c(\vec{u} + \vec{v})$ and right-hand side $c\vec{u} + c\vec{v}$ manually on paper to prove Vector Distributivity.
-* **Task 2:** Compute $(c + d)\vec{u}$ and $c\vec{u} + d\vec{u}$ to prove Scalar Distributivity.
-
-<hr style="border: none; border-top: 1px dashed #FDBA74; margin: 18px 0;">
-
-<h3 style="color: #EA580C; margin-top: 10px; margin-bottom: 8px; font-size: 16px;">📝 Question 2: Geometric Span & Linear Combinations</h3>
-
-Suppose you are given two vectors $\vec{v}_1 = \begin{bmatrix} 1 \\ 2 \end{bmatrix}$ and $\vec{v}_2 = \begin{bmatrix} 3 \\ 6 \end{bmatrix}$.
-
-* **Task 1:** Can you find scalars $c_1, c_2$ such that $c_1 \vec{v}_1 + c_2 \vec{v}_2 = \begin{bmatrix} 2 \\ 5 \end{bmatrix}$? Try solving the system algebraically.
-* **Geometric Analysis:** Explain why $\vec{v}_1$ and $\vec{v}_2$ fail to span the entire 2D plane $\mathbb{R}^2$. Describe the exact geometric line or subspace they create.
-
-</div>
-</div>
-<div class="theory-block" id="sec-87">
-<div style="background-color: #FFF7ED; border-left: 6px solid #F97316; border-radius: 8px; padding: 15px 20px; margin: 20px 0 10px 0; border: 1px solid #FFEDD5;">
-<h3 style="color: #C2410C; margin-top: 0; margin-bottom: 6px; font-size: 17px;">
-        🐍 Challenge 1: Vector Addition & Scaling (Fill-in-the-Blanks)
-</h3>
-<p style="color: #7C2D12; margin: 0; font-size: 14px;">In this exercise, complete the Python code to perform basic component-wise vector addition and scalar scaling using NumPy.</p>
-</div>
-</div>
-
-<div class="exercise-card" id="ex-module-3a">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px;">
-    <h3 style="margin:0; font-size: 1.15rem; color: #f97316;">📝 Module 3 Exercise A: Testing Linear Independence</h3>
-    <span style="background: rgba(249, 115, 22, 0.15); color: #f97316; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">EXERCISE</span>
-  </div>
-  <p>Determine whether the vectors $\mathbf{u} = \begin{bmatrix} 1 \\ 2 \end{bmatrix}$ and $\mathbf{v} = \begin{bmatrix} 2 \\ 4 \end{bmatrix}$ are linearly independent in $\mathbb{R}^2$. What is their Span?</p>
-  <button class="toggle-solution-btn">💡 Reveal Solution & Explanation</button>
-  <div class="solution-content" style="display: none; margin-top: 15px; padding: 15px; background: rgba(99, 102, 241, 0.08); border-radius: var(--radius-sm); border: 1px solid var(--bg-card-border);">
-    <h4 style="margin-top:0; color:#10b981;">Solution & Analysis:</h4>
-    <p>1. Observe that $\mathbf{v} = 2\mathbf{u}$ because $\begin{bmatrix} 2 \\ 4 \end{bmatrix} = 2 \begin{bmatrix} 1 \\ 2 \end{bmatrix}$.</p>
-    <p>2. We can form the zero vector with non-zero weights: $2\mathbf{u} - 1\mathbf{v} = \mathbf{0}$. Therefore, the set $\{\mathbf{u}, \mathbf{v}\}$ is <strong>Linearly Dependent</strong>.</p>
-    <p>3. <strong>Span:</strong> Because they point along the exact same direction, $\text{Span}(\mathbf{u}, \mathbf{v})$ is only a <strong>1-dimensional line</strong> passing through the origin: $y = 2x$. It does NOT span $\mathbb{R}^2$!</p>
-  </div>
-</div>
-
-<div class="theory-block" id="sec-89">
-<div style="background-color: #FFF7ED; border-left: 6px solid #F97316; border-radius: 8px; padding: 15px 20px; margin: 20px 0 10px 0; border: 1px solid #FFEDD5;">
-<h3 style="color: #C2410C; margin-top: 0; margin-bottom: 6px; font-size: 17px;">
-        🐍 Challenge 2: Vector Commutativity Property Checker (Fill-in-the-Blanks)
-</h3>
-<p style="color: #7C2D12; margin: 0; font-size: 14px;">Complete the script below to verify programmatically whether vector addition satisfies the Commutative Property: $\vec{u} + \vec{v} = \vec{v} + \vec{u}$.</p>
-</div>
-</div>
-
-<div class="exercise-card" id="ex-module-3b">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px;">
-    <h3 style="margin:0; font-size: 1.15rem; color: #f97316;">📝 Module 3 Exercise B: Target Vector Span Membership</h3>
-    <span style="background: rgba(249, 115, 22, 0.15); color: #f97316; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">EXERCISE</span>
-  </div>
-  <p>Let $\mathbf{v}_1 = \begin{bmatrix} 1 \\ 0 \end{bmatrix}$ and $\mathbf{v}_2 = \begin{bmatrix} 0 \\ 1 \end{bmatrix}$. Does the vector $\mathbf{w} = \begin{bmatrix} 5 \\ 7 \end{bmatrix}$ belong to $\text{Span}(\mathbf{v}_1, \mathbf{v}_2)$? Find the linear combination.</p>
-  <button class="toggle-solution-btn">💡 Reveal Solution & Explanation</button>
-  <div class="solution-content" style="display: none; margin-top: 15px; padding: 15px; background: rgba(99, 102, 241, 0.08); border-radius: var(--radius-sm); border: 1px solid var(--bg-card-border);">
-    <h4 style="margin-top:0; color:#10b981;">Solution:</h4>
-    <p>Yes! Since $\mathbf{v}_1$ and $\mathbf{v}_2$ are the standard basis vectors $\mathbf{e}_1, \mathbf{e}_2$ of $\mathbb{R}^2$, their span is all of $\mathbb{R}^2$.</p>
-    <p>Any vector in $\mathbb{R}^2$ can be uniquely written as: $$\mathbf{w} = 5\mathbf{v}_1 + 7\mathbf{v}_2 = 5\begin{bmatrix} 1 \\ 0 \end{bmatrix} + 7\begin{bmatrix} 0 \\ 1 \end{bmatrix} = \begin{bmatrix} 5 \\ 7 \end{bmatrix}$$</p>
-  </div>
-</div>
-
-</section>
-
-        <!-- Footer -->
-        <footer style="margin-top: 60px; padding: 40px 0; border-top: 1px solid var(--bg-card-border); text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-          <p><strong>Newton School of Technology — Linear Algebra Interactive Laboratory</strong></p>
-          <p style="margin-top: 6px;">Batch of 2026–27 • Built with Pure HTML, CSS, JavaScript, Plotly.js & MathJax</p>
-          <p style="margin-top: 6px; font-size: 0.8rem;">Permanently Hosted Free on GitHub Pages with Infinite Scale</p>
-        </footer>
-      </div>
+      <!-- Bottom Pager (Auto-populated by core.js) -->
+      <nav id="pager"></nav>
     </main>
   </div>
 
-  <!-- JavaScript Applications -->
-  <script src="app.js"></script>
-  <script src="simulations.js"></script>
+  <footer class="site-footer">
+    Newton School of Technology · Course in Linear Algebra (Mathematics-3) · Interactive Companion Laboratory
+  </footer>
+
+  <!-- KaTeX Typography CDN -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <!-- Core Platform Runtime -->
+  <script src="core.js"></script>
 </body>
 </html>

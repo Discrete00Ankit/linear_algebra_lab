@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module 3: Vectors and their Properties · M3 Interactive Lab</title>
+  <!-- KaTeX Typography (Global High-Speed CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="m3">
+
+  <div class="layout">
+    <!-- Sticky Table of Contents (Auto-populated by core.js) -->
+    <aside class="toc" id="toc"></aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+
+      <!-- Module Hero -->
+      <header class="module-hero">
+        <span class="eyebrow">MODULE 03 · THE ATOMS OF LINEAR ALGEBRA</span>
+        <h1>Vectors and their Properties</h1>
+        <p>Unify vector notation across physics, computer science, and mathematics. Explore vector spaces, continuous subspace spans, and inverse column synthesis.</p>
+        <div class="hero-goals">
+          <div>🎯 <b>The 3 Perspectives:</b> Physics arrows, CS data arrays, and Math columns.</div>
+          <div>🎯 <b>Continuous Span:</b> Lines, planes, and volumes swept by vector combinations.</div>
+          <div>🎯 <b>Solving $A\mathbf{x} = \mathbf{b}$:</b> Reaching target $\mathbf{b}$ through column synthesis.</div>
+        </div>
+      </header>
+
+      <!-- Section 1 -->
+      <section class="chapter" id="sec-1" data-title="Three Perspectives on Vectors">
+        <h2><span class="num">1</span> The Three Perspectives on a Single Vector</h2>
+        <p>When you encounter a vector in science and engineering, different disciplines describe it through different lenses, yet all three represent the exact same underlying mathematical reality:</p>
+
+        <div class="cards">
+          <div class="card blue">
+            <h4>🏹 1. Physics Perspective</h4>
+            <p><b>"An arrow with magnitude and direction."</b><br>
+            $\mathbf{v} = x\mathbf{i} + y\mathbf{j}$. Models displacement, velocity, and force in physical continuous space.</p>
+          </div>
+          <div class="card green">
+            <h4>💻 2. Computer Science Perspective</h4>
+            <p><b>"An ordered numerical array or list."</b><br>
+            $\mathbf{v} = [x, y]$. Stores structured features, weights, screen pixel offsets, or audio samples.</p>
+          </div>
+          <div class="card amber">
+            <h4>📐 3. Mathematics Perspective</h4>
+            <p><b>"An element of a vector space ($\mathbb{R}^2$)."</b><br>
+            $\mathbf{v} = \begin{bmatrix}x\\y\end{bmatrix}$. An object obeying axioms of vector addition and scalar scaling.</p>
+          </div>
+        </div>
+
+        <!-- Pre-Context for Lab 3.1 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore &amp; Predict Before Interacting</span>
+          </div>
+          <p>• <b>Predict:</b> If you drag the grey anchor handle $(t_x, t_y)$ to different positions across the plane, will the vector's length, angle, or computer data array change?</p>
+          <p>• <b>Action:</b> Adjust the East $(x)$ and North $(y)$ displacement sliders to change the arrow's length and direction, then drag the anchor point $(t_x, t_y)$. Observe how the Physics, CS, and Math views react.</p>
+        </div>
+
+        <!-- Interactive Lab 3.1 -->
+        <div id="lab-vector-perspectives"></div>
+
+        <!-- Post-Context for Lab 3.1 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Translation Invariance:</b> A vector is an equivalence class of directed line segments defined strictly by its displacement components $\Delta x$ and $\Delta y$. Moving its tail does <i>not</i> alter the vector — it only changes where the arrow is drawn in space.</p>
+          <p>• <b>Standard Position:</b> When rooted at the origin $(0, 0)$, the coordinates of the arrow tip coincide with the vector components $\begin{bmatrix}x \\ y\end{bmatrix}$.</p>
+        </div>
+      </section>
+
+      <!-- Section 2 -->
+      <section class="chapter" id="sec-2" data-title="Geometry of Addition &amp; Scaling">
+        <h2><span class="num">2</span> The Geometry of Addition and Scaling in $\mathbb{R}^2$</h2>
+        <p>No matter what domain we work in, linear algebra reduces to the exact same two fundamental operations: <b>Vector Addition</b> and <b>Scalar Multiplication</b>.</p>
+
+        <div class="cards two">
+          <div class="card blue">
+            <h4>➡️ Method 1: Head-to-Tail Rule (Triangle Law)</h4>
+            <p>Draw vector $\mathbf{u}$ from the origin. Attach the tail of vector $\mathbf{v}$ directly to the head of $\mathbf{u}$. The sum $\mathbf{u} + \mathbf{v}$ points directly from the start of $\mathbf{u}$ to the tip of $\mathbf{v}$. Models sequential physical displacements.</p>
+          </div>
+          <div class="card orange">
+            <h4>📐 Method 2: Parallelogram Law</h4>
+            <p>Root both vectors at the same origin. Complete the parallelogram by drawing parallel opposite sides. The main diagonal represents the resultant sum $\mathbf{u} + \mathbf{v}$. Models simultaneous forces.</p>
+          </div>
+        </div>
+
+        <!-- Pre-Context for Lab 3.2 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore &amp; Predict Before Interacting</span>
+          </div>
+          <p>• <b>Predict:</b> What happens to the direction of $\mathbf{v}$ if the scalar multiplier $c$ is set to a negative number like $-1.0$ or $-2.0$?</p>
+          <p>• <b>Action:</b> Toggle between the <b>Head-to-Tail Rule</b> and the <b>Parallelogram Law</b>. Change the scalar slider $c$ and observe the resultant sum $\mathbf{u} + c\mathbf{v}$.</p>
+        </div>
+
+        <!-- Interactive Lab 3.2 -->
+        <div id="lab-vector-addition"></div>
+
+        <!-- Post-Context for Lab 3.2 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Commutativity ($\mathbf{u} + \mathbf{v} = \mathbf{v} + \mathbf{u}$):</b> The Head-to-Tail path $\mathbf{u} \to \mathbf{v}$ and the reverse path $\mathbf{v} \to \mathbf{u}$ both arrive at the exact same diagonal vertex of the parallelogram.</p>
+          <p>• <b>Negative Scaling:</b> Multiplying by a negative scalar scales the length by $|c|$ while flipping the orientation by exactly $180^\circ$. Subtraction is simply addition of the opposite vector: $\mathbf{u} - \mathbf{v} = \mathbf{u} + (-1)\mathbf{v}$.</p>
+        </div>
+      </section>
+
+      <!-- Section 3 -->
+      <section class="chapter" id="sec-3" data-title="Combination vs. Span">
+        <h2><span class="num">3</span> Linear Combination vs. Span: One Point vs. The Entire Universe</h2>
+        
+        <div class="cards two">
+          <div class="card blue">
+            <h4>📍 Linear Combination (One Point)</h4>
+            <p>You lock in <b>one specific choice of weights</b>: $\mathbf{y} = c_1\mathbf{v}_1 + c_2\mathbf{v}_2$. It produces one single landing point.</p>
+          </div>
+          <div class="card green">
+            <h4>🌌 The Span (The Entire Universe)</h4>
+            <p>You allow weights $c_1, c_2$ to take <b>all possible real numbers</b>: $\text{Span}\{\mathbf{v}_1, \mathbf{v}_2\} = \{c_1\mathbf{v}_1 + c_2\mathbf{v}_2 \mid c_i \in \mathbb{R}\}$. It is the entire continuous territory swept out!</p>
+          </div>
+        </div>
+
+        <!-- Pre-Context for Lab 3.3 (Vector Hunter Game) -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 Game Challenge: Can You Reach Every Target? (Notebook 2 Cell 49)</span>
+          </div>
+          <p>• <b>Test Independent vs. Dependent:</b> Select <b>Engine 1</b> (independent vectors $\mathbf{v}_1 = [1, 1]^T, \mathbf{v}_2 = [1, -1]^T$) and steer the scalar dials $c_1$ and $c_2$ to hit the targets.</p>
+          <p>• <b>The Collinear Trap:</b> Now switch to <b>Engine 2</b> (collinear vectors $\mathbf{v}_1 = [1, 2]^T, \mathbf{v}_2 = [2, 4]^T$). Can you hit the Key $[1, 0]^T$ or Diamond $[3, -2]^T$? Why is the Star $[-2, -4]^T$ the only target you can reach?</p>
+        </div>
+
+        <!-- NEW GAME LAB 3.3 -->
+        <div id="lab-vector-hunter-game"></div>
+
+        <!-- Post-Context for Lab 3.3 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Full 2D Span vs. 1D Line Collapse:</b> In Engine 1, because $\mathbf{v}_1$ and $\mathbf{v}_2$ point in different directions, their linear combinations fill the entire 2D plane ($\text{Rank} = 2$). Any target can be reached!</p>
+          <p>• <b>Linear Dependence Trap:</b> In Engine 2, because $\mathbf{v}_2 = 2\mathbf{v}_1$, the second vector adds zero new directional freedom. All linear combinations $c_1\mathbf{v}_1 + c_2\mathbf{v}_2 = (c_1 + 2c_2)[1, 2]^T$ are permanently trapped on the line $y = 2x$ ($\text{Rank} = 1$). Any target off this line is completely unreachable.</p>
+        </div>
+
+        <p style="margin-top: 30px;">Now, let us examine the continuous territory swept out by all linear combinations in the continuous 2D subspace laboratory below:</p>
+
+        <!-- Pre-Context for Lab 3.4 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore &amp; Predict Before Interacting</span>
+          </div>
+          <p>• <b>Predict:</b> Under what conditions do two vectors in $\mathbb{R}^2$ span a 1D line instead of the entire 2D plane?</p>
+          <p>• <b>Action:</b> Switch presets between <b>Full Plane Subspace</b>, <b>1D Line Subspace</b>, and <b>Degenerate Origin</b>. Drag the target point across the plane and observe the required scalars $(c_1, c_2)$.</p>
+        </div>
+
+        <!-- Interactive Lab 3.4 -->
+        <div id="lab-2d-span"></div>
+
+        <!-- Post-Context for Lab 3.4 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Subspace Geometry in $\mathbb{R}^2$:</b> The span of vectors in $\mathbb{R}^2$ can only produce three geometric objects: the single origin point $\{\mathbf{0}\}$ (Dimension 0), a line through the origin (Dimension 1), or the entire 2D plane $\mathbb{R}^2$ (Dimension 2).</p>
+          <p>• <b>Solvability Criterion:</b> An algebraic equation $c_1\mathbf{v} + c_2\mathbf{w} = \mathbf{b}$ has a solution if and only if target point $\mathbf{b}$ lies inside $\text{Span}(\mathbf{v}, \mathbf{w})$.</p>
+        </div>
+
+        <!-- NEW GAME LAB 3.5: The Broken Controller Game -->
+        <div class="lab-context before" style="margin-top: 35px;">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 Game Challenge: The Broken Controller in 3D Space (Notebook 2 Cell 57)</span>
+          </div>
+          <p>• <b>The Scenario:</b> Imagine playing a 3D video game with a damaged controller where the $Z$-axis motor is broken! Button 1 moves East ($X$) and Button 2 moves North ($Y$). The movement matrix is $A = \begin{bmatrix} 1 & 0 \\ 0 & 1 \\ 0 & 0 \end{bmatrix}$.</p>
+          <p>• <b>Predict:</b> Can you pick up the Ground Coin $[3, 2, 0]^T$? What happens when the target is the Floating Diamond $[2, 3, 4]^T$ suspended in mid-air?</p>
+        </div>
+
+        <!-- NEW GAME LAB 3.5 -->
+        <div id="lab-broken-controller-game"></div>
+
+        <!-- Post-Context for Lab 3.5 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>The Column Space $C(A)$ is the Set of Reachable Locations:</b> The Column Space $C(A)$ represents all physical coordinates your character can reach. Because only the $X$ and $Y$ buttons work, $C(A)$ is strictly the flat 2D floor plane $Z = 0$.</p>
+          <p>• <b>The Rank Test for Consistency:</b>
+            $$\mathbf{\text{Rank}(A) = \text{Rank}([A \mid \mathbf{b}])} \iff \mathbf{b} \in C(A)$$
+            When the target floats at $Z = 4$, adding it introduces a 3rd independent direction ($\text{Rank}([A \mid \mathbf{b}]) = 3$), while $\text{Rank}(A) = 2$. The system is <b>Inconsistent (No Solution)</b>!
+          </p>
+        </div>
+
+        <p style="margin-top: 35px;">Now explore the general 3D subspace geometries with 3 vectors in 3D space:</p>
+
+        <!-- Pre-Context for Lab 3.6 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore &amp; Predict Before Interacting</span>
+          </div>
+          <p>• <b>Predict:</b> If three vectors $\mathbf{u}, \mathbf{v}, \mathbf{w}$ all lie on the same flat sheet in $\mathbb{R}^3$, can they reach every point in the 3D room?</p>
+          <p>• <b>Action:</b> Switch between <b>1D Line Trap</b>, <b>2D Plane Trap</b>, <b>Redundant Trio</b>, and <b>Full 3D Volume Span</b>. Rotate the 3D camera to inspect the distance gap to target $\mathbf{b}$.</p>
+        </div>
+
+        <!-- Interactive Lab 3.6 -->
+        <div id="lab-3d-span-lab"></div>
+
+        <!-- Post-Context for Lab 3.6 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Dimensionality in $\mathbb{R}^3$:</b> Three vectors can span: (1) A 1D line (Rank 1), (2) A 2D plane (Rank 2), or (3) The entire 3D space $\mathbb{R}^3$ (Rank 3).</p>
+          <p>• <b>Solvability Gap:</b> When target $\mathbf{b}$ lies outside the subspace, the shortest distance from $\mathbf{b}$ to the span is strictly positive ($> 0$), meaning $A\mathbf{x} = \mathbf{b}$ has zero solutions.</p>
+        </div>
+      </section>
+
+      <!-- Section 4 -->
+      <section class="chapter" id="sec-4" data-title="The Linear Alchemist Capstone">
+        <h2><span class="num">4</span> The Linear Alchemist: Cross-Domain Capstone Challenge</h2>
+        <p>Put everything into practice. Test your intuition of linear combinations, column synthesis ($A\mathbf{x} = \mathbf{b}$), and dimensional span across light, motion, and 3D space:</p>
+
+        <!-- Pre-Context for Lab 3.7 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore &amp; Predict Before Interacting</span>
+          </div>
+          <p>• <b>Level 1 (Color Synthesis):</b> Blend Red, Green, and Blue light vectors to synthesize the target stage color.</p>
+          <p>• <b>Level 2 (Drone Navigation):</b> Chain displacement vectors head-to-tail to guide a drone to the target landing pad.</p>
+          <p>• <b>Level 3 (Subspace Detective):</b> Inspect target vectors and determine if they lie within the span of the given basis columns.</p>
+        </div>
+
+        <!-- Interactive Lab 3.7 -->
+        <div id="lab-linear-alchemist-game"></div>
+
+        <!-- Post-Context for Lab 3.7 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Universal Synthesis Principle:</b> Whether combining RGB color channels in computer graphics, forces in physics, or audio waveforms in acoustic engineering, the underlying mathematics is identical: computing a linear combination of basis vectors $\sum x_i \mathbf{v}_i$.</p>
+        </div>
+      </section>
+
+      <!-- Section 5 -->
+      <section class="chapter" id="sec-5" data-title="Assignments &amp; Code Lab">
+        <h2><span class="num">5</span> Assignments &amp; Code Challenges</h2>
+
+        <!-- Pre-Context for CodeLab 3.8 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 Python CodeLab Challenge</span>
+          </div>
+          <p>• Complete the Python NumPy script below to perform vector addition and scalar multiplication. Test your understanding of array syntax in computational linear algebra.</p>
+        </div>
+
+        <!-- Code Lab 3.8 -->
+        <div id="lab-code-vector-ops"></div>
+
+        <!-- Post-Context for CodeLab 3.8 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Python Implementation Takeaway</span>
+          </div>
+          <p>• In NumPy, operations like <code>u + v</code> and <code>c * u</code> operate component-wise via SIMD vectorization, without requiring explicit <code>for</code> loops.</p>
+        </div>
+
+        <!-- Module Mastery Self-Check Quiz -->
+        <div id="quiz-m3"></div>
+
+        <!-- Interactive Assignment MCQs -->
+        <div class="callout def" style="margin-top: 30px;">
+          <div class="callout-title">📝 Assignment Intuition &amp; Conceptual MCQs</div>
+          <p>Reinforce your mastery of Module 3 concepts with these conceptual multiple-choice questions. Select your answer and get immediate geometric feedback!</p>
+        </div>
+        <div id="assignment-quiz-m3"></div>
+
+        <!-- Assignment Sheet -->
+        <div class="assign">
+          <h3>✍️ Pen-and-Paper Assignment &amp; Conceptual Analysis</h3>
+          <div class="q">
+            <h4>📝 Question 1: Verifying Vector Space Axioms</h4>
+            <div class="given">u = [4, -2]ᵀ &nbsp;&nbsp;&nbsp;&nbsp; v = [-1, 5]ᵀ &nbsp;&nbsp;&nbsp;&nbsp; c = 3 &nbsp;&nbsp;&nbsp;&nbsp; d = -2</div>
+            <ul>
+              <li><b>Task 1:</b> Compute $c(\mathbf{u} + \mathbf{v})$ and $c\mathbf{u} + c\mathbf{v}$ manually to prove Vector Distributivity.</li>
+              <li><b>Task 2:</b> Compute $(c + d)\mathbf{u}$ and $c\mathbf{u} + d\mathbf{u}$ to prove Scalar Distributivity.</li>
+            </ul>
+          </div>
+          <div class="q">
+            <h4>📝 Question 2: Geometric Span &amp; Collinearity</h4>
+            <div class="given">v₁ = [1, 2]ᵀ &nbsp;&nbsp;&nbsp;&nbsp; v₂ = [3, 6]ᵀ</div>
+            <ul>
+              <li><b>Task 1:</b> Can you find scalars $c_1, c_2$ such that $c_1\mathbf{v}_1 + c_2\mathbf{v}_2 = [2, 5]^T$?</li>
+              <li><b>Geometric Analysis:</b> Why do $\mathbf{v}_1$ and $\mathbf{v}_2$ fail to span $\mathbb{R}^2$? Describe the exact 1D line subspace they create ($y = 2x$).</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="end-badge">
+          <span>🎉 CONGRATULATIONS! MODULE 3 COMPLETED!</span>
+        </div>
+      </section>
+
+      <!-- Bottom Pager -->
+      <nav id="pager"></nav>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    Newton School of Technology · Course in Linear Algebra (Mathematics-3) · Interactive Companion Laboratory
+  </footer>
+
+  <!-- KaTeX Mathematical Typesetting Engine -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Plotly 3D Graphing Engine -->
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.24.1/plotly.min.js"></script>
+
+  <!-- Core Platform Runtime & Module Logic -->
+  <script src="core.js"></script>
+  <script src="module3.js"></script>
+</body>
+</html>

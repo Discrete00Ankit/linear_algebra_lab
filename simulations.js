@@ -1,6 +1,6 @@
 /**
  * Linear Algebra Interactive Laboratory
- * Core Simulation Engine (Pure JavaScript & HTML5 Canvas / Plotly / Web Audio)
+ * Core Simulation Engine (Fixed Canvas Sizing, True Aspect Ratio, Pure JS)
  * Newton School of Technology — Batch of 2026-27
  */
 
@@ -9,9 +9,9 @@ function getThemeColors() {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
   return {
     isLight,
-    bg: isLight ? '#ffffff' : '#111827',
-    grid: isLight ? 'rgba(203, 213, 225, 0.6)' : 'rgba(51, 65, 85, 0.4)',
-    axis: isLight ? '#475569' : '#94a3b8',
+    bg: isLight ? '#ffffff' : '#0f172a',
+    grid: isLight ? 'rgba(203, 213, 225, 0.7)' : 'rgba(51, 65, 85, 0.45)',
+    axis: isLight ? '#334155' : '#94a3b8',
     text: isLight ? '#0f172a' : '#f8fafc',
     textMuted: isLight ? '#64748b' : '#94a3b8',
     accent1: '#6366f1', // Indigo
@@ -23,94 +23,117 @@ function getThemeColors() {
   };
 }
 
-// Crisp Canvas setup for High-DPI Screens
-function setupCanvas(canvas) {
+/**
+ * Rock-Solid Canvas Setup (Fixed Height, Retina DPR, Never Stretches)
+ */
+function setupCanvas(canvas, defaultHeight = 380) {
   if (!canvas) return null;
   const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-  const width = rect.width > 0 ? rect.width : (canvas.parentElement ? canvas.parentElement.clientWidth : 600);
-  const height = canvas.getAttribute('height') ? parseInt(canvas.getAttribute('height')) : 400;
+  const container = canvas.parentElement;
   
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
+  // Logical CSS width: read from container or canvas
+  const width = (container && container.clientWidth > 0) ? container.clientWidth : 600;
+  // Logical CSS height: strictly fixed so it NEVER mutates on input events!
+  const height = defaultHeight;
+  
+  const targetPxW = Math.round(width * dpr);
+  const targetPxH = Math.round(height * dpr);
+  
+  if (canvas.width !== targetPxW || canvas.height !== targetPxH) {
+    canvas.width = targetPxW;
+    canvas.height = targetPxH;
+  }
+  
   canvas.style.width = width + 'px';
   canvas.style.height = height + 'px';
   
   const ctx = canvas.getContext('2d');
+  // Reset transform to identity before scaling to prevent cumulative transforms
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.scale(dpr, dpr);
+  
   return { ctx, width, height, dpr };
 }
 
-// Cartesian Coordinate Grid
-function drawCartesianGrid(ctx, width, height, xMin, xMax, yMin, yMax, theme) {
+/**
+ * True-Aspect Ratio Cartesian Coordinate Grid (Equal Scaling in X and Y)
+ */
+function drawSquareGrid(ctx, width, height, yRange, theme) {
   ctx.clearRect(0, 0, width, height);
-  const toScreenX = (x) => ((x - xMin) / (xMax - xMin)) * width;
-  const toScreenY = (y) => height - ((y - yMin) / (yMax - yMin)) * height;
   
+  const originX = width / 2;
+  const originY = height / 2;
+  // unitPx: pixels per mathematical unit
+  const unitPx = (height * 0.85) / (2 * yRange);
+  
+  const toScreenX = (x) => originX + x * unitPx;
+  const toScreenY = (y) => originY - y * unitPx;
+  
+  const xRange = (width / 2) / unitPx;
+  
+  // Grid Lines
   ctx.lineWidth = 1;
   ctx.strokeStyle = theme.grid;
-  const xSpan = xMax - xMin;
-  const ySpan = yMax - yMin;
-  const xStep = xSpan > 15 ? 2 : 1;
-  const yStep = ySpan > 15 ? 2 : 1;
-  
   ctx.beginPath();
-  for (let x = Math.ceil(xMin); x <= xMax; x += xStep) {
+  
+  for (let x = Math.ceil(-xRange); x <= Math.floor(xRange); x++) {
     const sx = toScreenX(x);
     ctx.moveTo(sx, 0);
     ctx.lineTo(sx, height);
   }
-  for (let y = Math.ceil(yMin); y <= yMax; y += yStep) {
+  for (let y = Math.ceil(-yRange); y <= Math.floor(yRange); y++) {
     const sy = toScreenY(y);
     ctx.moveTo(0, sy);
     ctx.lineTo(width, sy);
   }
   ctx.stroke();
   
+  // Axes
   ctx.lineWidth = 2;
   ctx.strokeStyle = theme.axis;
   ctx.beginPath();
-  const originX = toScreenX(0);
-  const originY = toScreenY(0);
-  
-  if (originY >= 0 && originY <= height) {
-    ctx.moveTo(0, originY);
-    ctx.lineTo(width, originY);
-  }
-  if (originX >= 0 && originX <= width) {
-    ctx.moveTo(originX, 0);
-    ctx.lineTo(originX, height);
-  }
+  // X axis
+  ctx.moveTo(0, originY);
+  ctx.lineTo(width, originY);
+  // Y axis
+  ctx.moveTo(originX, 0);
+  ctx.lineTo(originX, height);
   ctx.stroke();
   
+  // Ticks & Labels
   ctx.fillStyle = theme.textMuted;
-  ctx.font = '10px Inter, sans-serif';
+  ctx.font = '11px Inter, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  for (let x = Math.ceil(xMin); x <= xMax; x += xStep * 2) {
-    if (Math.abs(x) < 0.001) continue;
+  
+  for (let x = Math.ceil(-xRange); x <= Math.floor(xRange); x += 2) {
+    if (x === 0) continue;
     const sx = toScreenX(x);
-    const yPos = Math.min(Math.max(originY + 4, 15), height - 15);
-    ctx.fillText(x.toString(), sx, yPos);
+    if (sx >= 15 && sx <= width - 15) {
+      ctx.fillText(x.toString(), sx, Math.min(originY + 6, height - 16));
+    }
   }
   
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
-  for (let y = Math.ceil(yMin); y <= yMax; y += yStep * 2) {
-    if (Math.abs(y) < 0.001) continue;
+  for (let y = Math.ceil(-yRange); y <= Math.floor(yRange); y += 2) {
+    if (y === 0) continue;
     const sy = toScreenY(y);
-    const xPos = Math.min(Math.max(originX - 6, 20), width - 5);
-    ctx.fillText(y.toString(), xPos, sy);
+    if (sy >= 15 && sy <= height - 15) {
+      ctx.fillText(y.toString(), Math.max(originX - 6, 20), sy);
+    }
   }
   
-  return { toScreenX, toScreenY, originX, originY };
+  return { toScreenX, toScreenY, originX, originY, unitPx, xRange, yRange };
 }
 
 // Arrow Vector Drawing
 function drawVector(ctx, fromX, fromY, toX, toY, color, label = '', lineWidth = 3) {
-  const headLength = 10;
+  const headLength = 11;
   const dx = toX - fromX;
   const dy = toY - fromY;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  if (len < 1) return;
   const angle = Math.atan2(dy, dx);
   
   ctx.save();
@@ -156,71 +179,81 @@ function initCurveSim() {
     const c = parseFloat(slider.value);
     if (readout) readout.textContent = c.toFixed(2);
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 380);
     if (!inst) return;
     const { ctx, width, height } = inst;
     
-    const xMin = -4, xMax = 4, yMin = -4, yMax = 4;
-    const { toScreenX, toScreenY } = drawCartesianGrid(ctx, width, height, xMin, xMax, yMin, yMax, theme);
+    const grid = drawSquareGrid(ctx, width, height, 4.5, theme);
+    const { toScreenX, toScreenY, xRange } = grid;
     
-    // Draw linear equation: x + y = c  => y = c - x
+    // 1. Draw Linear Line: x + y = c => y = c - x
     ctx.strokeStyle = theme.accent1;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(toScreenX(xMin), toScreenY(c - xMin));
-    ctx.lineTo(toScreenX(xMax), toScreenY(c - xMax));
+    ctx.moveTo(toScreenX(-xRange), toScreenY(c - (-xRange)));
+    ctx.lineTo(toScreenX(xRange), toScreenY(c - xRange));
     ctx.stroke();
     
-    // Draw non-linear equation: sin(x) + sin(y) = c => sin(y) = c - sin(x)
-    // If |c - sin(x)| <= 1, y = arcsin(c - sin(x)) + 2k*pi or pi - arcsin(...)
+    // 2. Draw Non-Linear Equation: sin(x) + sin(y) = c => sin(y) = c - sin(x)
     ctx.strokeStyle = theme.accent4;
     ctx.lineWidth = 2.5;
-    const step = 0.02;
+    const step = 0.03;
     for (let k = -2; k <= 2; k++) {
       let drawing1 = false;
       ctx.beginPath();
-      for (let x = xMin; x <= xMax; x += step) {
+      for (let x = -xRange; x <= xRange; x += step) {
         const val = c - Math.sin(x);
         if (Math.abs(val) <= 1) {
-          const base = Math.asin(val);
-          const y = base + 2 * Math.PI * k;
-          if (y >= yMin && y <= yMax) {
-            const sx = toScreenX(x);
-            const sy = toScreenY(y);
-            if (!drawing1) { ctx.moveTo(sx, sy); drawing1 = true; }
-            else { ctx.lineTo(sx, sy); }
-          } else { drawing1 = false; }
+          const y = Math.asin(val) + 2 * Math.PI * k;
+          const sx = toScreenX(x);
+          const sy = toScreenY(y);
+          if (!drawing1) { ctx.moveTo(sx, sy); drawing1 = true; }
+          else { ctx.lineTo(sx, sy); }
         } else { drawing1 = false; }
       }
       ctx.stroke();
 
       let drawing2 = false;
       ctx.beginPath();
-      for (let x = xMin; x <= xMax; x += step) {
+      for (let x = -xRange; x <= xRange; x += step) {
         const val = c - Math.sin(x);
         if (Math.abs(val) <= 1) {
-          const base = Math.PI - Math.asin(val);
-          const y = base + 2 * Math.PI * k;
-          if (y >= yMin && y <= yMax) {
-            const sx = toScreenX(x);
-            const sy = toScreenY(y);
-            if (!drawing2) { ctx.moveTo(sx, sy); drawing2 = true; }
-            else { ctx.lineTo(sx, sy); }
-          } else { drawing2 = false; }
+          const y = Math.PI - Math.asin(val) + 2 * Math.PI * k;
+          const sx = toScreenX(x);
+          const sy = toScreenY(y);
+          if (!drawing2) { ctx.moveTo(sx, sy); drawing2 = true; }
+          else { ctx.lineTo(sx, sy); }
         } else { drawing2 = false; }
       }
       ctx.stroke();
     }
     
-    // Legend
-    ctx.font = 'bold 12px Inter, sans-serif';
+    // Clean, Non-Clipping Legend Badge in Top-Right
+    const badgeW = 270;
+    const badgeH = 50;
+    const badgeX = Math.max(15, width - badgeW - 15);
+    const badgeY = 15;
+    ctx.fillStyle = theme.isLight ? 'rgba(255, 255, 255, 0.92)' : 'rgba(15, 23, 42, 0.92)';
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 8);
+    } else {
+      ctx.rect(badgeX, badgeY, badgeW, badgeH);
+    }
+    ctx.fill();
+    ctx.strokeStyle = theme.isLight ? '#cbd5e1' : 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.font = 'bold 11px Inter, sans-serif';
+    ctx.textAlign = 'left';
     ctx.fillStyle = theme.accent1;
-    ctx.fillText(`Linear: x + y = ${c.toFixed(2)} (Flat Straight Line)`, 20, 25);
+    ctx.fillText(`● Linear: x + y = ${c.toFixed(2)} (Flat Line)`, badgeX + 14, badgeY + 20);
     ctx.fillStyle = theme.accent4;
-    ctx.fillText(`Non-Linear: sin(x) + sin(y) = ${c.toFixed(2)} (Transcendental Contours)`, 20, 45);
+    ctx.fillText(`● Non-Linear: sin(x) + sin(y) = ${c.toFixed(2)} (Rings)`, badgeX + 14, badgeY + 38);
     
     if (status) {
-      status.innerHTML = `<span><strong>Constant c = ${c.toFixed(2)}</strong>: Linear lines scale proportionally without bending, whereas non-linear trigonometric functions generate periodic, wavy contour rings.</span>`;
+      status.innerHTML = `<span><strong>Parameter c = ${c.toFixed(2)}</strong>: Linear equations produce flat invariant straight lines ($m = -1$), whereas trigonometric equations generate curved periodic closed loops.</span>`;
     }
   }
 
@@ -253,34 +286,33 @@ function initLineSolverSim() {
     const valC2 = parseFloat(c2.value) || 0;
 
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 380);
     if (!inst) return;
     const { ctx, width, height } = inst;
-    const xMin = -6, xMax = 6, yMin = -6, yMax = 6;
-    const { toScreenX, toScreenY } = drawCartesianGrid(ctx, width, height, xMin, xMax, yMin, yMax, theme);
+    
+    const grid = drawSquareGrid(ctx, width, height, 5.5, theme);
+    const { toScreenX, toScreenY, xRange, yRange } = grid;
 
-    // Function to draw line ax + by = c
-    function plotLine(a, b, c, color, label) {
+    function plotLine(a, b, c, color) {
       ctx.save();
       ctx.strokeStyle = color;
       ctx.lineWidth = 2.5;
       ctx.beginPath();
       if (Math.abs(b) > 0.001) {
-        ctx.moveTo(toScreenX(xMin), toScreenY((c - a * xMin) / b));
-        ctx.lineTo(toScreenX(xMax), toScreenY((c - a * xMax) / b));
+        ctx.moveTo(toScreenX(-xRange), toScreenY((c - a * (-xRange)) / b));
+        ctx.lineTo(toScreenX(xRange), toScreenY((c - a * xRange) / b));
       } else if (Math.abs(a) > 0.001) {
         const x = c / a;
-        ctx.moveTo(toScreenX(x), toScreenY(yMin));
-        ctx.lineTo(toScreenX(x), toScreenY(yMax));
+        ctx.moveTo(toScreenX(x), toScreenY(-yRange));
+        ctx.lineTo(toScreenX(x), toScreenY(yRange));
       }
       ctx.stroke();
       ctx.restore();
     }
 
-    plotLine(valA1, valB1, valC1, theme.accent1, 'Line 1');
-    plotLine(valA2, valB2, valC2, theme.accent2, 'Line 2');
+    plotLine(valA1, valB1, valC1, theme.accent1);
+    plotLine(valA2, valB2, valC2, theme.accent2);
 
-    // Determinant
     const det = valA1 * valB2 - valA2 * valB1;
     let statusText = '';
 
@@ -291,7 +323,6 @@ function initLineSolverSim() {
       const sx = toScreenX(xStar);
       const sy = toScreenY(yStar);
       
-      // Draw intersection point
       ctx.beginPath();
       ctx.arc(sx, sy, 7, 0, Math.PI * 2);
       ctx.fillStyle = theme.accent4;
@@ -301,19 +332,18 @@ function initLineSolverSim() {
       ctx.stroke();
 
       ctx.fillStyle = theme.text;
-      ctx.font = 'bold 13px Inter, sans-serif';
-      ctx.fillText(`(${xStar.toFixed(2)}, ${yStar.toFixed(2)})`, sx + 10, sy - 10);
+      ctx.font = 'bold 12px Inter, sans-serif';
+      ctx.fillText(`Intersection: (${xStar.toFixed(2)}, ${yStar.toFixed(2)})`, sx + 10, sy - 10);
 
-      statusText = `<strong>Unique Intersection:</strong> Solution vector <strong>x* = [${xStar.toFixed(2)}, ${yStar.toFixed(2)}]ᵀ</strong> | Determinant det(A) = ${det.toFixed(2)} ≠ 0`;
+      statusText = `<span style="color:#10b981;">✓ <strong>Unique Intersection:</strong></span> Solution <strong>x* = [${xStar.toFixed(2)}, ${yStar.toFixed(2)}]ᵀ</strong> | Determinant det(A) = ${det.toFixed(2)} ≠ 0`;
     } else {
-      // Parallel or coincident
       const ratioA = valA2 !== 0 ? valA1 / valA2 : 0;
       const ratioC = valC2 !== 0 ? valC1 / valC2 : 0;
       const isCoincident = Math.abs(ratioA - ratioC) < 0.05 && (valC1 !== 0 || valC2 === 0);
       if (isCoincident) {
-        statusText = `<strong>Infinitely Many Solutions:</strong> det(A) = 0 and both equations represent the exact same line!`;
+        statusText = `<span style="color:#f59e0b;">● <strong>Infinitely Many Solutions:</strong></span> det(A) = 0 and lines are coincident (identical line).`;
       } else {
-        statusText = `<strong>No Solution (Inconsistent):</strong> det(A) = 0 and lines are parallel and disjoint. No common point!`;
+        statusText = `<span style="color:#ef4444;">✗ <strong>No Solution (Inconsistent):</strong></span> det(A) = 0 and lines are strictly parallel and disjoint.`;
       }
     }
     if (status) status.innerHTML = statusText;
@@ -326,7 +356,6 @@ function initLineSolverSim() {
 
 /* ==========================================================================
    SIMULATION 3: 2D TRICHOTOMY CLASSIFIER (Cell 17)
-   Unique Solution, No Solution (Parallel), Infinitely Many (Coincident)
    ========================================================================== */
 function initTrichotomySim() {
   const canvas = document.getElementById('trichotomy-canvas');
@@ -336,15 +365,16 @@ function initTrichotomySim() {
   const status = document.getElementById('trichotomy-status');
   if (!canvas) return;
 
-  let currentCase = 1; // 1: Unique, 2: Parallel, 3: Coincident
+  let currentCase = 1;
 
   function render() {
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 380);
     if (!inst) return;
     const { ctx, width, height } = inst;
-    const xMin = -6, xMax = 6, yMin = -6, yMax = 6;
-    const { toScreenX, toScreenY } = drawCartesianGrid(ctx, width, height, xMin, xMax, yMin, yMax, theme);
+    
+    const grid = drawSquareGrid(ctx, width, height, 5, theme);
+    const { toScreenX, toScreenY, xRange } = grid;
 
     if (currentCase === 1) {
       // x + 2y = 3  => y = (3 - x)/2
@@ -352,14 +382,14 @@ function initTrichotomySim() {
       ctx.strokeStyle = theme.accent1;
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(toScreenX(xMin), toScreenY((3 - xMin) / 2));
-      ctx.lineTo(toScreenX(xMax), toScreenY((3 - xMax) / 2));
+      ctx.moveTo(toScreenX(-xRange), toScreenY((3 - (-xRange)) / 2));
+      ctx.lineTo(toScreenX(xRange), toScreenY((3 - xRange) / 2));
       ctx.stroke();
 
       ctx.strokeStyle = theme.accent2;
       ctx.beginPath();
-      ctx.moveTo(toScreenX(xMin), toScreenY(3 * xMin - 2));
-      ctx.lineTo(toScreenX(xMax), toScreenY(3 * xMax - 2));
+      ctx.moveTo(toScreenX(-xRange), toScreenY(3 * (-xRange) - 2));
+      ctx.lineTo(toScreenX(xRange), toScreenY(3 * xRange - 2));
       ctx.stroke();
 
       // Intersection at (1, 1)
@@ -384,14 +414,14 @@ function initTrichotomySim() {
       ctx.strokeStyle = theme.accent1;
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(toScreenX(xMin), toScreenY((4 - xMin) / 2));
-      ctx.lineTo(toScreenX(xMax), toScreenY((4 - xMax) / 2));
+      ctx.moveTo(toScreenX(-xRange), toScreenY((4 - (-xRange)) / 2));
+      ctx.lineTo(toScreenX(xRange), toScreenY((4 - xRange) / 2));
       ctx.stroke();
 
       ctx.strokeStyle = theme.accent4;
       ctx.beginPath();
-      ctx.moveTo(toScreenX(xMin), toScreenY((-2 - xMin) / 2));
-      ctx.lineTo(toScreenX(xMax), toScreenY((-2 - xMax) / 2));
+      ctx.moveTo(toScreenX(-xRange), toScreenY((-2 - (-xRange)) / 2));
+      ctx.lineTo(toScreenX(xRange), toScreenY((-2 - xRange) / 2));
       ctx.stroke();
 
       if (status) {
@@ -400,19 +430,18 @@ function initTrichotomySim() {
     } else {
       // Coincident: x + 2y = 3 and 2x + 4y = 6
       ctx.strokeStyle = theme.accent1;
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 5;
       ctx.beginPath();
-      ctx.moveTo(toScreenX(xMin), toScreenY((3 - xMin) / 2));
-      ctx.lineTo(toScreenX(xMax), toScreenY((3 - xMax) / 2));
+      ctx.moveTo(toScreenX(-xRange), toScreenY((3 - (-xRange)) / 2));
+      ctx.lineTo(toScreenX(xRange), toScreenY((3 - xRange) / 2));
       ctx.stroke();
 
-      // Dotted overlay of second equation
       ctx.strokeStyle = theme.accent3;
       ctx.lineWidth = 2.5;
       ctx.setLineDash([8, 6]);
       ctx.beginPath();
-      ctx.moveTo(toScreenX(xMin), toScreenY((3 - xMin) / 2));
-      ctx.lineTo(toScreenX(xMax), toScreenY((3 - xMax) / 2));
+      ctx.moveTo(toScreenX(-xRange), toScreenY((3 - (-xRange)) / 2));
+      ctx.lineTo(toScreenX(xRange), toScreenY((3 - xRange) / 2));
       ctx.stroke();
       ctx.setLineDash([]);
 
@@ -429,11 +458,8 @@ function initTrichotomySim() {
   function updateButtons() {
     [btn1, btn2, btn3].forEach((b, idx) => {
       if (!b) return;
-      if (idx + 1 === currentCase) {
-        b.classList.add('active');
-      } else {
-        b.classList.remove('active');
-      }
+      if (idx + 1 === currentCase) b.classList.add('active');
+      else b.classList.remove('active');
     });
   }
 
@@ -444,7 +470,6 @@ function initTrichotomySim() {
 
 /* ==========================================================================
    SIMULATION 4: 3D PLANES 6 SCENARIOS (Cell 21)
-   Plotly 3D Surface Intersections
    ========================================================================== */
 function init3DScenariosSim() {
   const container = document.getElementById('plotly-3d-scenarios');
@@ -478,7 +503,7 @@ function init3DScenariosSim() {
       planes: [
         { z: (x, y) => 2 - x, color: 'Blues', name: 'Plane 1: x + z = 2' },
         { z: (x, y) => -2 + x, color: 'Greens', name: 'Plane 2: x - z = 2' },
-        { z: (x, y) => y * 0 + 2, color: 'YlOrRd', name: 'Plane 3: z = 2' }
+        { z: (x, y) => 2, color: 'YlOrRd', name: 'Plane 3: z = 2' }
       ],
       point: null,
       desc: "Planes pairwise intersect along 3 parallel lines, forming an open triangular tunnel. No single point is shared by all three planes!"
@@ -519,9 +544,7 @@ function init3DScenariosSim() {
     const sc = scenarios[key] || scenarios.unique;
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     
-    // Grid
-    const xVals = [];
-    const yVals = [];
+    const xVals = [], yVals = [];
     for (let i = -3; i <= 3; i += 0.5) { xVals.push(i); yVals.push(i); }
     
     const data = [];
@@ -530,7 +553,7 @@ function init3DScenariosSim() {
       for (let yi = 0; yi < yVals.length; yi++) {
         const row = [];
         for (let xi = 0; xi < xVals.length; xi++) {
-          row.push(pl.z(xVals[xi], yVals[yi]));
+          row.push(typeof pl.z === 'function' ? pl.z(xVals[xi], yVals[yi]) : pl.z);
         }
         zGrid.push(row);
       }
@@ -561,8 +584,8 @@ function init3DScenariosSim() {
     }
 
     const layout = {
-      margin: { l: 0, r: 0, b: 0, t: 30 },
-      paper_bgcolor: isLight ? '#f8fafc' : '#111827',
+      margin: { l: 0, r: 0, b: 0, t: 20 },
+      paper_bgcolor: isLight ? '#ffffff' : '#0f172a',
       scene: {
         camera: { eye: { x: 1.5, y: -1.6, z: 1.2 } },
         xaxis: { title: 'X', color: isLight ? '#334155' : '#94a3b8' },
@@ -581,7 +604,6 @@ function init3DScenariosSim() {
 
 /* ==========================================================================
    SIMULATION 5: 3D CUSTOM SYSTEM SOLVER (Cell 24)
-   Solves Ax = d and plots the 3 planes in Plotly
    ========================================================================== */
 function init3DCustomSolverSim() {
   const container = document.getElementById('plotly-3d-custom');
@@ -590,7 +612,6 @@ function init3DCustomSolverSim() {
   if (!container || typeof Plotly === 'undefined') return;
 
   function solveAndPlot() {
-    // Plane 1: a1 x + b1 y + c1 z = d1
     const a1 = parseFloat(document.getElementById('p1-a')?.value || 1);
     const b1 = parseFloat(document.getElementById('p1-b')?.value || 1);
     const c1 = parseFloat(document.getElementById('p1-c')?.value || 1);
@@ -606,7 +627,6 @@ function init3DCustomSolverSim() {
     const c3 = parseFloat(document.getElementById('p3-c')?.value || -1);
     const d3 = parseFloat(document.getElementById('p3-d')?.value || 2);
 
-    // Determinant of 3x3
     const det = a1*(b2*c3 - b3*c2) - b1*(a2*c3 - a3*c2) + c1*(a2*b3 - a3*b2);
 
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
@@ -632,7 +652,6 @@ function init3DCustomSolverSim() {
     ];
 
     if (Math.abs(det) > 0.0001) {
-      // Cramer's rule
       const detX = d1*(b2*c3 - b3*c2) - b1*(d2*c3 - d3*c2) + c1*(d2*b3 - d3*b2);
       const detY = a1*(d2*c3 - d3*c2) - d1*(a2*c3 - a3*c2) + c1*(a2*d3 - a3*d2);
       const detZ = a1*(b2*d3 - b3*d2) - b1*(a2*d3 - a3*d2) + d1*(a2*b3 - a3*b2);
@@ -656,13 +675,13 @@ function init3DCustomSolverSim() {
       }
     } else {
       if (status) {
-        status.innerHTML = `<span style="color: #ef4444;">⚠ <strong>Singular System:</strong></span> det(A) = 0. No unique point intersection exists (Planes are parallel or meet along a line/prism).`;
+        status.innerHTML = `<span style="color: #ef4444;">⚠ <strong>Singular System:</strong></span> det(A) = 0. No unique point intersection exists.`;
       }
     }
 
     const layout = {
       margin: { l: 0, r: 0, b: 0, t: 20 },
-      paper_bgcolor: isLight ? '#f8fafc' : '#111827',
+      paper_bgcolor: isLight ? '#ffffff' : '#0f172a',
       scene: {
         camera: { eye: { x: 1.5, y: -1.5, z: 1.2 } },
         xaxis: { title: 'X', color: isLight ? '#334155' : '#94a3b8' },
@@ -692,7 +711,7 @@ function initRowColumnSim() {
   const status = document.getElementById('row-column-status');
   if (!canvas || !sliderX) return;
 
-  let viewMode = 'both'; // 'row', 'column', 'both'
+  let viewMode = 'both';
 
   function render() {
     const xVal = parseFloat(sliderX.value);
@@ -701,99 +720,134 @@ function initRowColumnSim() {
     if (valYText) valYText.textContent = yVal.toFixed(2);
 
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 380);
     if (!inst) return;
     const { ctx, width, height } = inst;
     
-    // Split into 2 halves if 'both', else full canvas
     if (viewMode === 'both') {
       const halfW = width / 2;
       
       // LEFT HALF: ROW PICTURE
       ctx.save();
+      ctx.beginPath();
       ctx.rect(0, 0, halfW, height);
       ctx.clip();
-      const rGrid = drawCartesianGrid(ctx, halfW, height, -4, 4, -2, 6, theme);
       
+      const rOriginX = halfW / 2;
+      const rOriginY = height / 2;
+      const rUnitPx = (height * 0.8) / 10;
+      const rToX = (x) => rOriginX + x * rUnitPx;
+      const rToY = (y) => rOriginY - y * rUnitPx;
+
+      // Grid
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = -6; x <= 6; x++) { ctx.moveTo(rToX(x), 0); ctx.lineTo(rToX(x), height); }
+      for (let y = -6; y <= 6; y++) { ctx.moveTo(0, rToY(y)); ctx.lineTo(halfW, rToY(y)); }
+      ctx.stroke();
+
+      // Axes
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, rOriginY); ctx.lineTo(halfW, rOriginY);
+      ctx.moveTo(rOriginX, 0); ctx.lineTo(rOriginX, height);
+      ctx.stroke();
+
       // Line 1: x + 2y = 3 => y = (3 - x)/2
       ctx.strokeStyle = theme.accent1;
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(rGrid.toScreenX(-4), rGrid.toScreenY((3 - (-4)) / 2));
-      ctx.lineTo(rGrid.toScreenX(4), rGrid.toScreenY((3 - 4) / 2));
+      ctx.moveTo(rToX(-6), rToY((3 - (-6)) / 2));
+      ctx.lineTo(rToX(6), rToY((3 - 6) / 2));
       ctx.stroke();
 
       // Line 2: 4x + 5y = 6 => y = (6 - 4x)/5
       ctx.strokeStyle = theme.accent2;
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(rGrid.toScreenX(-4), rGrid.toScreenY((6 - 4 * (-4)) / 5));
-      ctx.lineTo(rGrid.toScreenX(4), rGrid.toScreenY((6 - 4 * 4) / 5));
+      ctx.moveTo(rToX(-6), rToY((6 - 4 * (-6)) / 5));
+      ctx.lineTo(rToX(6), rToY((6 - 4 * 6) / 5));
       ctx.stroke();
 
-      // Probe point (x, y)
-      const px = rGrid.toScreenX(xVal);
-      const py = rGrid.toScreenY(yVal);
+      // Intersection (-1, 2)
+      ctx.beginPath();
+      ctx.arc(rToX(-1), rToY(2), 5, 0, Math.PI * 2);
+      ctx.fillStyle = theme.accent3;
+      ctx.fill();
+
+      // Probe Point (x, y)
+      const px = rToX(xVal);
+      const py = rToY(yVal);
       ctx.beginPath();
       ctx.arc(px, py, 6, 0, Math.PI * 2);
       ctx.fillStyle = theme.accent4;
       ctx.fill();
       ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       ctx.fillStyle = theme.text;
       ctx.font = 'bold 11px Inter, sans-serif';
       ctx.fillText(`Probe (${xVal.toFixed(1)}, ${yVal.toFixed(1)})`, px + 8, py - 8);
 
-      // Intersection point (-1, 2)
-      const ix = rGrid.toScreenX(-1);
-      const iy = rGrid.toScreenY(2);
-      ctx.beginPath();
-      ctx.arc(ix, iy, 4, 0, Math.PI * 2);
-      ctx.fillStyle = theme.accent3;
-      ctx.fill();
-
       ctx.fillStyle = theme.accent1;
-      ctx.fillText('Row Picture: Intersecting Lines', 15, 20);
+      ctx.fillText('Row Picture: Lines Cross', 15, 20);
       ctx.restore();
 
       // RIGHT HALF: COLUMN PICTURE
       ctx.save();
       ctx.translate(halfW, 0);
+      ctx.beginPath();
       ctx.rect(0, 0, halfW, height);
       ctx.clip();
-      const cGrid = drawCartesianGrid(ctx, halfW, height, -4, 6, -2, 8, theme);
 
-      // col1 = [1, 4], col2 = [2, 5], b = [3, 6]
-      const c1x = 1, c1y = 4;
-      const c2x = 2, c2y = 5;
-      const bx = 3, by = 6;
+      const cOriginX = halfW / 3;
+      const cOriginY = height * 0.75;
+      const cUnitPx = (height * 0.7) / 10;
+      const cToX = (x) => cOriginX + x * cUnitPx;
+      const cToY = (y) => cOriginY - y * cUnitPx;
 
-      // Draw target b
-      drawVector(ctx, cGrid.originX, cGrid.originY, cGrid.toScreenX(bx), cGrid.toScreenY(by), theme.accent4, 'Target b [3, 6]ᵀ', 3.5);
-
-      // Draw scaled col1: x * col1
-      const p1x = xVal * c1x;
-      const p1y = xVal * c1y;
-      drawVector(ctx, cGrid.originX, cGrid.originY, cGrid.toScreenX(p1x), cGrid.toScreenY(p1y), theme.accent1, `x·col₁`, 2.5);
-
-      // Draw scaled col2 starting at tip of scaled col1
-      const p2x = p1x + yVal * c2x;
-      const p2y = p1y + yVal * c2y;
-      drawVector(ctx, cGrid.toScreenX(p1x), cGrid.toScreenY(p1y), cGrid.toScreenX(p2x), cGrid.toScreenY(p2y), theme.accent2, `+ y·col₂`, 2.5);
-
-      // Resultant marker
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(cGrid.toScreenX(p2x), cGrid.toScreenY(p2y), 6, 0, Math.PI * 2);
+      for (let x = -3; x <= 8; x++) { ctx.moveTo(cToX(x), 0); ctx.lineTo(cToX(x), height); }
+      for (let y = -2; y <= 9; y++) { ctx.moveTo(0, cToY(y)); ctx.lineTo(halfW, cToY(y)); }
+      ctx.stroke();
+
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, cOriginY); ctx.lineTo(halfW, cOriginY);
+      ctx.moveTo(cOriginX, 0); ctx.lineTo(cOriginX, height);
+      ctx.stroke();
+
+      // Target b [3, 6]
+      drawVector(ctx, cOriginX, cOriginY, cToX(3), cToY(6), theme.accent4, 'Target b [3, 6]ᵀ', 3.5);
+
+      // x * col1 [1, 4]
+      const p1x = xVal * 1;
+      const p1y = xVal * 4;
+      drawVector(ctx, cOriginX, cOriginY, cToX(p1x), cToY(p1y), theme.accent1, 'x·col₁', 2.5);
+
+      // + y * col2 [2, 5]
+      const p2x = p1x + yVal * 2;
+      const p2y = p1y + yVal * 5;
+      drawVector(ctx, cToX(p1x), cToY(p1y), cToX(p2x), cToY(p2y), theme.accent2, '+ y·col₂', 2.5);
+
+      // Result tip
+      ctx.beginPath();
+      ctx.arc(cToX(p2x), cToY(p2y), 5, 0, Math.PI * 2);
       ctx.fillStyle = theme.accent3;
       ctx.fill();
 
       ctx.fillStyle = theme.accent2;
       ctx.font = 'bold 11px Inter, sans-serif';
-      ctx.fillText('Column Picture: Linear Combination', 15, 20);
+      ctx.fillText('Column Picture: Vector Sum', 15, 20);
       ctx.restore();
 
-      // Divider line
+      // Divider
       ctx.strokeStyle = theme.grid;
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -802,57 +856,58 @@ function initRowColumnSim() {
       ctx.stroke();
 
     } else if (viewMode === 'row') {
-      const rGrid = drawCartesianGrid(ctx, width, height, -4, 4, -2, 6, theme);
+      const grid = drawSquareGrid(ctx, width, height, 5, theme);
+      const { toScreenX, toScreenY, xRange } = grid;
+
       ctx.strokeStyle = theme.accent1;
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(rGrid.toScreenX(-4), rGrid.toScreenY((3 - (-4)) / 2));
-      ctx.lineTo(rGrid.toScreenX(4), rGrid.toScreenY((3 - 4) / 2));
+      ctx.moveTo(toScreenX(-xRange), toScreenY((3 - (-xRange)) / 2));
+      ctx.lineTo(toScreenX(xRange), toScreenY((3 - xRange) / 2));
       ctx.stroke();
 
       ctx.strokeStyle = theme.accent2;
       ctx.beginPath();
-      ctx.moveTo(rGrid.toScreenX(-4), rGrid.toScreenY((6 - 4 * (-4)) / 5));
-      ctx.lineTo(rGrid.toScreenX(4), rGrid.toScreenY((6 - 4 * 4) / 5));
+      ctx.moveTo(toScreenX(-xRange), toScreenY((6 - 4 * (-xRange)) / 5));
+      ctx.lineTo(toScreenX(xRange), toScreenY((6 - 4 * xRange) / 5));
       ctx.stroke();
 
-      const ix = rGrid.toScreenX(-1);
-      const iy = rGrid.toScreenY(2);
+      const ix = toScreenX(-1);
+      const iy = toScreenY(2);
       ctx.beginPath();
       ctx.arc(ix, iy, 7, 0, Math.PI * 2);
       ctx.fillStyle = theme.accent4;
       ctx.fill();
-      ctx.stroke();
       ctx.fillStyle = theme.text;
       ctx.font = 'bold 12px Inter, sans-serif';
-      ctx.fillText('Exact Solution: (-1.0, 2.0)', ix + 10, iy - 10);
+      ctx.fillText('Exact Intersection: (-1.0, 2.0)', ix + 10, iy - 10);
     } else {
-      const cGrid = drawCartesianGrid(ctx, width, height, -4, 6, -2, 8, theme);
-      const c1x = 1, c1y = 4, c2x = 2, c2y = 5, bx = 3, by = 6;
-      drawVector(ctx, cGrid.originX, cGrid.originY, cGrid.toScreenX(bx), cGrid.toScreenY(by), theme.accent4, 'Target b [3, 6]ᵀ', 3.5);
-      const p1x = xVal * c1x;
-      const p1y = xVal * c1y;
-      drawVector(ctx, cGrid.originX, cGrid.originY, cGrid.toScreenX(p1x), cGrid.toScreenY(p1y), theme.accent1, `x·col₁`, 2.5);
-      const p2x = p1x + yVal * c2x;
-      const p2y = p1y + yVal * c2y;
-      drawVector(ctx, cGrid.toScreenX(p1x), cGrid.toScreenY(p1y), cGrid.toScreenX(p2x), cGrid.toScreenY(p2y), theme.accent2, `+ y·col₂`, 2.5);
+      const grid = drawSquareGrid(ctx, width, height, 5.5, theme);
+      const { toScreenX, toScreenY, originX, originY } = grid;
+      drawVector(ctx, originX, originY, toScreenX(3), toScreenY(6), theme.accent4, 'Target b [3, 6]ᵀ', 3.5);
+      const p1x = xVal * 1;
+      const p1y = xVal * 4;
+      drawVector(ctx, originX, originY, toScreenX(p1x), toScreenY(p1y), theme.accent1, 'x·col₁', 2.5);
+      const p2x = p1x + yVal * 2;
+      const p2y = p1y + yVal * 5;
+      drawVector(ctx, toScreenX(p1x), toScreenY(p1y), toScreenX(p2x), toScreenY(p2y), theme.accent2, '+ y·col₂', 2.5);
     }
 
     const dist = Math.sqrt(Math.pow(xVal - (-1), 2) + Math.pow(yVal - 2, 2));
     if (dist < 0.15) {
-      if (status) status.innerHTML = `<span style="color: #10b981;">🎯 <strong>PERFECT MATCH!</strong> (x = -1.0, y = 2.0)</span> — In the Row Picture, the two lines intersect. In the Column Picture, (-1)[1, 4]ᵀ + (2)[2, 5]ᵀ lands exactly on target vector [3, 6]ᵀ!`;
+      if (status) status.innerHTML = `<span style="color: #10b981;">🎯 <strong>PERFECT SOLUTION MATCH!</strong> (x = -1.0, y = 2.0)</span> — In Row Picture, lines cross at (-1, 2). In Column Picture, (-1)[1, 4]ᵀ + (2)[2, 5]ᵀ reaches target [3, 6]ᵀ!`;
     } else {
-      if (status) status.innerHTML = `<span>Current weights: x = ${xVal.toFixed(2)}, y = ${yVal.toFixed(2)} | Distance to exact solution (-1, 2): ${dist.toFixed(2)}</span>`;
+      if (status) status.innerHTML = `<span>Weights: x = ${xVal.toFixed(2)}, y = ${yVal.toFixed(2)} | Distance to exact solution (-1, 2): <strong>${dist.toFixed(2)}</strong></span>`;
     }
   }
 
   modePills.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.onclick = () => {
       modePills.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       viewMode = btn.dataset.mode;
       render();
-    });
+    };
   });
 
   sliderX.addEventListener('input', render);
@@ -863,7 +918,6 @@ function initRowColumnSim() {
 
 /* ==========================================================================
    SIMULATION 7: 2D COLUMN PICTURE COMBINATION EXPLORER (Cell 31)
-   Interactive weights x1, x2 on customizable columns
    ========================================================================== */
 function initColumnExplorerSim() {
   const canvas = document.getElementById('column-explorer-canvas');
@@ -892,36 +946,21 @@ function initColumnExplorerSim() {
     if (x2Val) x2Val.textContent = x2.toFixed(2);
 
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 380);
     if (!inst) return;
     const { ctx, width, height } = inst;
-    const grid = drawCartesianGrid(ctx, width, height, -5, 5, -5, 5, theme);
+    const grid = drawSquareGrid(ctx, width, height, 4.5, theme);
 
-    // Draw Target b
     drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(targetB[0]), grid.toScreenY(targetB[1]), theme.accent4, `Target b [${targetB[0]}, ${targetB[1]}]ᵀ`, 3.5);
 
-    // Draw x1 * col1
     const v1x = x1 * col1[0];
     const v1y = x1 * col1[1];
     drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(v1x), grid.toScreenY(v1y), theme.accent1, `x₁·v₁`, 2.5);
 
-    // Draw x2 * col2 head-to-tail
     const endX = v1x + x2 * col2[0];
     const endY = v1y + x2 * col2[1];
     drawVector(ctx, grid.toScreenX(v1x), grid.toScreenY(v1y), grid.toScreenX(endX), grid.toScreenY(endY), theme.accent2, `+ x₂·v₂`, 2.5);
 
-    // Parallelogram completion line
-    ctx.strokeStyle = theme.accent2;
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(grid.originX, grid.originY);
-    ctx.lineTo(grid.toScreenX(x2 * col2[0]), grid.toScreenY(x2 * col2[1]));
-    ctx.lineTo(grid.toScreenX(endX), grid.toScreenY(endY));
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Check distance
     const dist = Math.sqrt(Math.pow(endX - targetB[0], 2) + Math.pow(endY - targetB[1], 2));
     if (dist < 0.1) {
       if (status) status.innerHTML = `<span style="color: #10b981;">🎯 <strong>TARGET REACHED!</strong></span> x₁ = ${x1.toFixed(2)}, x₂ = ${x2.toFixed(2)} exactly recreates target vector b!`;
@@ -937,10 +976,8 @@ function initColumnExplorerSim() {
       const targetB = [parseFloat(b1?.value || 2), parseFloat(b2?.value || 0)];
       const det = col1[0] * col2[1] - col1[1] * col2[0];
       if (Math.abs(det) > 0.0001) {
-        const sol1 = (targetB[0] * col2[1] - targetB[1] * col2[0]) / det;
-        const sol2 = (col1[0] * targetB[1] - col1[1] * targetB[0]) / det;
-        x1Slider.value = sol1;
-        x2Slider.value = sol2;
+        x1Slider.value = (targetB[0] * col2[1] - targetB[1] * col2[0]) / det;
+        x2Slider.value = (col1[0] * targetB[1] - col1[1] * targetB[0]) / det;
         render();
       }
     };
@@ -953,7 +990,6 @@ function initColumnExplorerSim() {
 
 /* ==========================================================================
    SIMULATION 8: RGB LIGHT STUDIO (Cell 39)
-   R^3 Color Space Basis Studio
    ========================================================================== */
 function initRGBStudioSim() {
   const rSlider = document.getElementById('rgb-r');
@@ -996,7 +1032,7 @@ function initRGBStudioSim() {
 
     if (canvas) {
       const theme = getThemeColors();
-      const inst = setupCanvas(canvas);
+      const inst = setupCanvas(canvas, 200);
       if (!inst) return;
       const { ctx, width, height } = inst;
       ctx.clearRect(0, 0, width, height);
@@ -1033,7 +1069,6 @@ function initRGBStudioSim() {
 
 /* ==========================================================================
    SIMULATION 9: ACOUSTIC WAVE SUPERPOSITION (Cell 41)
-   Web Audio API Mixing Bach + Martin Luther King Jr
    ========================================================================== */
 function initAudioMixerSim() {
   const bachSlider = document.getElementById('audio-bach-gain');
@@ -1058,28 +1093,24 @@ function initAudioMixerSim() {
     if (audioCtx) return;
     try {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      
       bachAudio = new Audio('bach.mp3');
       bachAudio.crossOrigin = 'anonymous';
       bachAudio.loop = true;
-      
       mlkAudio = new Audio('mlk.mp3');
       mlkAudio.crossOrigin = 'anonymous';
       mlkAudio.loop = true;
 
       const bachSource = audioCtx.createMediaElementSource(bachAudio);
       const mlkSource = audioCtx.createMediaElementSource(mlkAudio);
-
       bachGainNode = audioCtx.createGain();
       mlkGainNode = audioCtx.createGain();
 
       bachSource.connect(bachGainNode);
       mlkSource.connect(mlkGainNode);
-
       bachGainNode.connect(audioCtx.destination);
       mlkGainNode.connect(audioCtx.destination);
     } catch (e) {
-      console.warn("AudioContext setup failed or fallback to synthetic mode:", e);
+      console.warn("AudioContext setup notice:", e);
     }
   }
 
@@ -1096,7 +1127,7 @@ function initAudioMixerSim() {
   let timePhase = 0;
   function drawWaveform() {
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 220);
     if (!inst) return;
     const { ctx, width, height } = inst;
     ctx.clearRect(0, 0, width, height);
@@ -1104,7 +1135,6 @@ function initAudioMixerSim() {
     const bGain = parseFloat(bachSlider.value);
     const mGain = parseFloat(mlkSlider.value);
 
-    // Grid center line
     ctx.strokeStyle = theme.grid;
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1112,9 +1142,6 @@ function initAudioMixerSim() {
     ctx.lineTo(width, height / 2);
     ctx.stroke();
 
-    // Wave 1: Bach representation (Classical melodic frequencies)
-    // Wave 2: MLK representation (Speech formant frequencies)
-    // Composite: alpha * s1 + beta * s2
     ctx.lineWidth = 2.5;
     ctx.strokeStyle = theme.accent1;
     ctx.beginPath();
@@ -1124,7 +1151,6 @@ function initAudioMixerSim() {
 
     for (let x = 0; x < width; x++) {
       const t = (x / width) * 20 + timePhase;
-      // Synthetic signals matching audio harmonic richness
       const sBach = Math.sin(t * 1.5) * 0.6 + Math.sin(t * 3.0) * 0.3 + Math.sin(t * 6.0) * 0.1;
       const sMLK = (Math.sin(t * 0.8) + Math.cos(t * 2.1) * 0.5 + Math.sin(t * 5.2) * 0.3) * (Math.sin(t * 0.2) > 0 ? 1 : 0.3);
 
@@ -1181,7 +1207,6 @@ function initAudioMixerSim() {
 
 /* ==========================================================================
    SIMULATION 10: MATRIX DIMENSION COMPATIBILITY (Cell 44)
-   A(m x k1) * B(k2 x n) => C(m x n) if k1 == k2
    ========================================================================== */
 function initMatrixDimensionsSim() {
   const mSlider = document.getElementById('dim-m');
@@ -1243,7 +1268,6 @@ function initMatrixDimensionsSim() {
 
 /* ==========================================================================
    SIMULATION 11: CHAI KITCHEN RECIPE MIXER (Cell 49)
-   Matrix A: [Boldness, Creaminess, Sweetness] x [Tea, Milk, Sugar]
    ========================================================================== */
 function initChaiKitchenSim() {
   const teaSlider = document.getElementById('chai-tea');
@@ -1257,10 +1281,6 @@ function initChaiKitchenSim() {
   const readout = document.getElementById('chai-readout');
   if (!teaSlider || !flavorCanvas) return;
 
-  // Matrix A:
-  // [Boldness]:   4.0*tea + 0.1*milk + 0.0*sugar
-  // [Creaminess]: 0.1*tea + 3.5*milk + 0.0*sugar
-  // [Sweetness]:  0.0*tea + 0.5*milk + 4.0*sugar
   function render() {
     const tea = parseFloat(teaSlider.value);
     const milk = parseFloat(milkSlider.value);
@@ -1276,8 +1296,7 @@ function initChaiKitchenSim() {
 
     const theme = getThemeColors();
 
-    // 1. Draw Flavor Bar Chart
-    const fInst = setupCanvas(flavorCanvas);
+    const fInst = setupCanvas(flavorCanvas, 220);
     if (fInst) {
       const { ctx, width, height } = fInst;
       ctx.clearRect(0, 0, width, height);
@@ -1305,25 +1324,22 @@ function initChaiKitchenSim() {
       });
     }
 
-    // 2. Draw Chai Cup Canvas
-    const cInst = setupCanvas(cupCanvas);
+    const cInst = setupCanvas(cupCanvas, 220);
     if (cInst) {
       const { ctx, width, height } = cInst;
       ctx.clearRect(0, 0, width, height);
 
       const cx = width / 2;
       const cy = height / 2 + 15;
-      const cupW = 80;
-      const cupH = 100;
+      const cupW = 60;
+      const cupH = 80;
 
-      // Color interpolation based on milk ratio
       const milkRatio = creaminess / (boldness + creaminess + 0.1);
       const r = Math.round(139 + milkRatio * 80);
       const g = Math.round(69 + milkRatio * 110);
       const b = Math.round(19 + milkRatio * 120);
       const chaiColor = `rgb(${r}, ${g}, ${b})`;
 
-      // Cup Outline
       ctx.fillStyle = '#ffffff';
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 3;
@@ -1335,30 +1351,19 @@ function initChaiKitchenSim() {
       ctx.closePath();
       ctx.stroke();
 
-      // Liquid fill
       ctx.fillStyle = chaiColor;
       ctx.beginPath();
-      ctx.moveTo(cx - cupW * 0.9, cy - cupH * 0.5);
-      ctx.lineTo(cx + cupW * 0.9, cy - cupH * 0.5);
+      ctx.moveTo(cx - cupW * 0.85, cy - cupH * 0.4);
+      ctx.lineTo(cx + cupW * 0.85, cy - cupH * 0.4);
       ctx.lineTo(cx + cupW * 0.7, cy + cupH);
       ctx.lineTo(cx - cupW * 0.7, cy + cupH);
       ctx.closePath();
       ctx.fill();
 
-      // Steam animation
-      ctx.strokeStyle = 'rgba(203, 213, 225, 0.4)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(cx - 15, cy - cupH - 5);
-      ctx.bezierCurveTo(cx - 25, cy - cupH - 25, cx - 5, cy - cupH - 35, cx - 15, cy - cupH - 50);
-      ctx.moveTo(cx + 15, cy - cupH - 5);
-      ctx.bezierCurveTo(cx + 5, cy - cupH - 25, cx + 25, cy - cupH - 35, cx + 15, cy - cupH - 50);
-      ctx.stroke();
-
       ctx.fillStyle = theme.text;
       ctx.font = 'bold 12px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Freshly Brewed Masala Chai', cx, cy + cupH + 20);
+      ctx.fillText('Fresh Masala Chai', cx, cy + cupH + 18);
     }
 
     if (readout) {
@@ -1373,7 +1378,6 @@ function initChaiKitchenSim() {
 
 /* ==========================================================================
    SIMULATION 12: DIGITAL IMAGE MATRIX TRANSFORMATIONS (Cell 52)
-   4x4 grid representation of letter 'F' transformed by matrices
    ========================================================================== */
 function initImageTransformSim() {
   const canvas = document.getElementById('img-transform-canvas');
@@ -1381,7 +1385,6 @@ function initImageTransformSim() {
   const status = document.getElementById('img-transform-status');
   if (!canvas || !selector) return;
 
-  // 4x4 representation of letter 'F'
   const F_orig = [
     [1, 1, 1, 1],
     [1, 0, 0, 0],
@@ -1389,19 +1392,16 @@ function initImageTransformSim() {
     [1, 0, 0, 0]
   ];
 
-  // Matrices:
   const I4 = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
-  const U4 = [[0,1,0,0],[0,0,1,0],[0,0,0,1],[0,0,0,0]]; // Shift Up
-  const D4 = [[0,0,0,0],[1,0,0,0],[0,1,0,0],[0,0,1,0]]; // Shift Down
-  const Flip = [[0,0,0,1],[0,0,1,0],[0,1,0,0],[1,0,0,0]]; // Flip
+  const U4 = [[0,1,0,0],[0,0,1,0],[0,0,0,1],[0,0,0,0]];
+  const D4 = [[0,0,0,0],[1,0,0,0],[0,1,0,0],[0,0,1,0]];
+  const Flip = [[0,0,0,1],[0,0,1,0],[0,1,0,0],[1,0,0,0]];
 
   function matMul4(A, B) {
     const res = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
-        for (let k = 0; k < 4; k++) {
-          res[i][j] += A[i][k] * B[k][j];
-        }
+        for (let k = 0; k < 4; k++) res[i][j] += A[i][k] * B[k][j];
       }
     }
     return res;
@@ -1418,15 +1418,14 @@ function initImageTransformSim() {
 
     const transformed = matMul4(M, F_orig);
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 240);
     if (!inst) return;
     const { ctx, width, height } = inst;
     ctx.clearRect(0, 0, width, height);
 
-    const cellSize = 32;
-    const startY = (height - 4 * cellSize) / 2;
+    const cellSize = 28;
+    const startY = (height - 4 * cellSize) / 2 + 10;
 
-    // Helper to draw 4x4 grid
     function drawGrid(grid, startX, title, highlightColor) {
       ctx.fillStyle = theme.text;
       ctx.font = 'bold 12px Inter, sans-serif';
@@ -1450,9 +1449,9 @@ function initImageTransformSim() {
     }
 
     const gap = (width - 3 * (4 * cellSize)) / 4;
-    drawGrid(F_orig, gap, "Original Image X", theme.accent1);
-    drawGrid(M, gap * 2 + 4 * cellSize, "Transform Matrix M", theme.accent3);
-    drawGrid(transformed, gap * 3 + 8 * cellSize, "Result M·X", theme.accent2);
+    drawGrid(F_orig, Math.max(10, gap), "Original Image X", theme.accent1);
+    drawGrid(M, Math.max(10, gap * 2 + 4 * cellSize), "Transform Matrix M", theme.accent3);
+    drawGrid(transformed, Math.max(10, gap * 3 + 8 * cellSize), "Result M·X", theme.accent2);
 
     if (status) status.innerHTML = `<strong>${label}</strong>`;
   }
@@ -1464,20 +1463,24 @@ function initImageTransformSim() {
 
 /* ==========================================================================
    SIMULATION 13: CANTEEN MENU MATRIX MULTIPLICATION (Cell 54)
-   A(3x3) * B(3x3) = C(3x3)
    ========================================================================== */
 function initCanteenMenuSim() {
   const canvas = document.getElementById('canteen-canvas');
   const d1Rice = document.getElementById('canteen-d1-rice');
   const d2Paneer = document.getElementById('canteen-d2-paneer');
   const d3Paneer = document.getElementById('canteen-d3-paneer');
+  const d1Val = document.getElementById('canteen-d1-val');
+  const d2Val = document.getElementById('canteen-d2-val');
+  const d3Val = document.getElementById('canteen-d3-val');
   const modePills = document.querySelectorAll('.canteen-view-btn');
   const status = document.getElementById('canteen-status');
   if (!canvas || !d1Rice) return;
 
-  let viewMode = 'column'; // 'column' or 'row'
+  let viewMode = 'column';
 
-  // A: [Cost, Calories, Protein] x [Rice, Paneer, Veggies]
+  // Matrix A: Properties × Ingredients
+  // Rows: Cost(₹), Calories(kcal), Protein(g)
+  // Cols: Rice, Paneer, Veggies
   const A = [
     [20.0, 60.0, 30.0],
     [200.0, 250.0, 80.0],
@@ -1489,110 +1492,191 @@ function initCanteenMenuSim() {
     const p2 = parseFloat(d2Paneer.value);
     const p3 = parseFloat(d3Paneer.value);
 
-    // B: [Rice, Paneer, Veggies] x [Dish 1, Dish 2, Dish 3]
+    if (d1Val) d1Val.textContent = r1.toFixed(1);
+    if (d2Val) d2Val.textContent = p2.toFixed(1);
+    if (d3Val) d3Val.textContent = p3.toFixed(1);
+
+    // Update Matrix B in DOM
+    const matBr1 = document.getElementById('mat-b-r1');
+    const matBp2 = document.getElementById('mat-b-p2');
+    const matBp3 = document.getElementById('mat-b-p3');
+    if (matBr1) matBr1.textContent = r1.toFixed(1);
+    if (matBp2) matBp2.textContent = p2.toFixed(1);
+    if (matBp3) matBp3.textContent = p3.toFixed(1);
+
+    // Matrix B: Ingredients × Dishes
+    // Col 0 (Khichdi): [r1, 0, 1]
+    // Col 1 (Thali): [1, p2, 1]
+    // Col 2 (Paneer Tikka): [0, p3, 1]
     const B = [
       [r1, 1.0, 0.0],
       [0.0, p2, p3],
       [1.0, 1.0, 1.0]
     ];
 
-    // C = A * B
-    const C = [
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0]
-    ];
+    // Compute C = A × B
+    const C = [[0,0,0],[0,0,0],[0,0,0]];
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
-        for (let k = 0; k < 3; k++) {
-          C[i][j] += A[i][k] * B[k][j];
-        }
+        for (let k = 0; k < 3; k++) C[i][j] += A[i][k] * B[k][j];
+      }
+    }
+
+    // Update Matrix C in DOM
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const el = document.getElementById(`mat-c-${i}${j}`);
+        if (el) el.textContent = C[i][j].toFixed(0);
       }
     }
 
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 320);
     if (!inst) return;
     const { ctx, width, height } = inst;
     ctx.clearRect(0, 0, width, height);
 
-    const dishes = ['Dish 1 (Khichdi)', 'Dish 2 (Thali)', 'Dish 3 (Paneer Tikka)'];
-    const props = ['Cost (₹)', 'Calories (kcal)', 'Protein (g)'];
-    const colors = ['#6366f1', '#10b981', '#f59e0b'];
+    const dishes = [
+      { name: 'Dish 1 (Khichdi)', icon: '🍲', color: '#6366f1' },
+      { name: 'Dish 2 (Thali)', icon: '🍛', color: '#10b981' },
+      { name: 'Dish 3 (Paneer Tikka)', icon: '🍢', color: '#f59e0b' }
+    ];
 
     if (viewMode === 'column') {
-      // Column View: Finished Dishes
-      const barW = width / 4;
-      dishes.forEach((dName, dIdx) => {
-        const x = (dIdx + 0.4) * barW;
-        ctx.fillStyle = theme.text;
-        ctx.font = 'bold 12px Inter, sans-serif';
+      // COLUMN PERSPECTIVE: 3 Finished Dishes
+      const colW = width / 3;
+      dishes.forEach((dish, j) => {
+        const cx = j * colW + colW / 2;
+        const leftX = j * colW + 14;
+        const cardW = colW - 28;
+
+        // Dish Card Background
+        ctx.fillStyle = theme.isLight ? '#f8fafc' : '#111827';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(leftX, 15, cardW, height - 30, 10);
+        else ctx.rect(leftX, 15, cardW, height - 30);
+        ctx.fill();
+        ctx.strokeStyle = dish.color;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Icon & Header
         ctx.textAlign = 'center';
-        ctx.fillText(dName, x + barW * 0.4, 25);
+        ctx.font = '22px Inter, sans-serif';
+        ctx.fillText(dish.icon, cx, 44);
 
-        // Draw 3 bars: Cost, Cal/10, Protein*5 for scale
-        const cost = C[0][dIdx];
-        const cal = C[1][dIdx];
-        const prot = C[2][dIdx];
-
-        ctx.font = '11px Inter, sans-serif';
-        ctx.fillStyle = colors[0];
-        ctx.fillText(`₹${cost.toFixed(0)}`, x + barW * 0.4, 50);
-        ctx.fillStyle = colors[1];
-        ctx.fillText(`${cal.toFixed(0)} kcal`, x + barW * 0.4, 70);
-        ctx.fillStyle = colors[2];
-        ctx.fillText(`${prot.toFixed(1)}g prot`, x + barW * 0.4, 90);
-
-        // Bar representation
-        const h1 = Math.min(cost * 1.5, height - 140);
-        ctx.fillStyle = colors[0];
-        ctx.fillRect(x + 10, height - 20 - h1, 20, h1);
-
-        const h2 = Math.min((cal / 400) * 120, height - 140);
-        ctx.fillStyle = colors[1];
-        ctx.fillRect(x + 35, height - 20 - h2, 20, h2);
-
-        const h3 = Math.min(prot * 4, height - 140);
-        ctx.fillStyle = colors[2];
-        ctx.fillRect(x + 60, height - 20 - h3, 20, h3);
-      });
-      if (status) status.innerHTML = `<strong>Column View:</strong> Each column of C is a linear combination of A's columns, representing the full nutritional profile of one finished dish!`;
-    } else {
-      // Row View: Property Across Menu
-      props.forEach((pName, pIdx) => {
-        const y = 50 + pIdx * 90;
+        ctx.font = 'bold 13px Outfit, sans-serif';
         ctx.fillStyle = theme.text;
-        ctx.font = 'bold 12px Inter, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText(pName, 20, y);
+        ctx.fillText(dish.name, cx, 66);
 
-        for (let j = 0; j < 3; j++) {
-          const val = C[pIdx][j];
-          ctx.fillStyle = colors[j];
-          ctx.fillText(`D${j+1}: ${val.toFixed(1)}`, 160 + j * 120, y);
-        }
+        // Price Badge
+        const cost = C[0][j];
+        ctx.fillStyle = '#6366f1';
+        ctx.font = 'bold 15px Outfit, sans-serif';
+        ctx.fillText(`₹${cost.toFixed(0)}`, cx, 90);
+
+        // Nutrition Meters
+        const cal = C[1][j];
+        const prot = C[2][j];
+
+        // Calorie Gauge
+        const gaugeY1 = 120;
+        ctx.textAlign = 'left';
+        ctx.font = '11px Inter, sans-serif';
+        ctx.fillStyle = theme.textMuted;
+        ctx.fillText(`Energy: ${cal.toFixed(0)} kcal`, leftX + 16, gaugeY1);
+        ctx.fillStyle = theme.isLight ? '#e2e8f0' : 'rgba(255,255,255,0.1)';
+        ctx.fillRect(leftX + 16, gaugeY1 + 6, cardW - 32, 8);
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(leftX + 16, gaugeY1 + 6, Math.min(cardW - 32, ((cardW - 32) * cal) / 750), 8);
+
+        // Protein Gauge
+        const gaugeY2 = 160;
+        ctx.fillStyle = theme.textMuted;
+        ctx.fillText(`Protein: ${prot.toFixed(1)}g`, leftX + 16, gaugeY2);
+        ctx.fillStyle = theme.isLight ? '#e2e8f0' : 'rgba(255,255,255,0.1)';
+        ctx.fillRect(leftX + 16, gaugeY2 + 6, cardW - 32, 8);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(leftX + 16, gaugeY2 + 6, Math.min(cardW - 32, ((cardW - 32) * prot) / 50), 8);
+
+        // Column Linear Combination Tag
+        ctx.textAlign = 'center';
+        ctx.font = '10px Fira Code, monospace';
+        ctx.fillStyle = theme.textMuted;
+        ctx.fillText(`col_${j+1}(C) = A · col_${j+1}(B)`, cx, height - 52);
+        
+        ctx.font = 'bold 11px Fira Code, monospace';
+        ctx.fillStyle = dish.color;
+        const bCol = [B[0][j], B[1][j], B[2][j]];
+        ctx.fillText(`[${bCol[0].toFixed(1)}a₁ + ${bCol[1].toFixed(1)}a₂ + ${bCol[2].toFixed(1)}a₃]`, cx, height - 34);
       });
-      if (status) status.innerHTML = `<strong>Row View:</strong> Each row of C takes one property (Cost/Calories/Protein) and evaluates it across the whole 3-dish menu!`;
+
+      if (status) {
+        status.innerHTML = `<strong>Column Perspective:</strong> Modifying a slider changes ONLY that dish's column! Column <em>j</em> of the product is purely a linear combination of the ingredient columns of A weighted by column <em>j</em> of B.`;
+      }
+    } else {
+      // ROW PERSPECTIVE: 3 Nutritional Properties Across Entire Menu
+      const props = [
+        { label: 'Total Cost Across Menu', unit: '₹', color: '#6366f1', idx: 0 },
+        { label: 'Energy Across Menu', unit: 'kcal', color: '#10b981', idx: 1 },
+        { label: 'Protein Across Menu', unit: 'g', color: '#f59e0b', idx: 2 }
+      ];
+
+      const rowH = (height - 30) / 3;
+      props.forEach((prop, i) => {
+        const topY = 15 + i * rowH;
+        ctx.fillStyle = theme.isLight ? '#f8fafc' : '#111827';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(14, topY, width - 28, rowH - 10, 8);
+        else ctx.rect(14, topY, width - 28, rowH - 10);
+        ctx.fill();
+        ctx.strokeStyle = prop.color;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 13px Outfit, sans-serif';
+        ctx.fillStyle = prop.color;
+        ctx.fillText(`Row ${i+1}: ${prop.label}`, 30, topY + 28);
+
+        // Values for D1, D2, D3
+        dishes.forEach((d, j) => {
+          const val = C[i][j];
+          const valX = width * 0.42 + j * (width * 0.18);
+          ctx.font = '11px Inter, sans-serif';
+          ctx.fillStyle = theme.textMuted;
+          ctx.fillText(`Dish ${j+1}:`, valX, topY + 22);
+
+          ctx.font = 'bold 14px Fira Code, monospace';
+          ctx.fillStyle = theme.text;
+          ctx.fillText(`${val.toFixed(0)} ${prop.unit}`, valX, topY + 44);
+        });
+      });
+
+      if (status) {
+        status.innerHTML = `<strong>Row Perspective:</strong> Row <em>i</em> of the product matrix evaluates property <em>i</em> across all dishes on the menu simultaneously: <code>row_i(C) = row_i(A) · B</code>.`;
+      }
     }
   }
 
-  modePills.forEach(btn => {
-    btn.onclick = () => {
-      modePills.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      viewMode = btn.dataset.view;
+  modePills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      modePills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      viewMode = pill.dataset.view;
       render();
-    };
+    });
   });
 
-  [d1Rice, d2Paneer, d3Paneer].forEach(s => s.addEventListener('input', render));
+  d1Rice.addEventListener('input', render);
+  d2Paneer.addEventListener('input', render);
+  d3Paneer.addEventListener('input', render);
   window.addEventListener('resize', render);
   render();
 }
 
-/* ==========================================================================
+/* =/* ==========================================================================
    SIMULATION 14: LIGHT MATRIX BLENDING (Cell 56)
-   Base light C (3x2) * D (2x3) = CD (3x3 palette)
    ========================================================================== */
 function initLightBlendingSim() {
   const s2Amber = document.getElementById('light-s2-amber');
@@ -1601,39 +1685,29 @@ function initLightBlendingSim() {
   const status = document.getElementById('light-status');
   if (!canvas || !s2Amber) return;
 
-  const C_base = [
-    [1.0, 0.0], // Red
-    [0.5, 1.0], // Green
-    [0.0, 1.0]  // Blue
-  ];
+  const C_base = [[1.0, 0.0], [0.5, 1.0], [0.0, 1.0]];
 
   function render() {
     const amb = parseFloat(s2Amber.value);
     const cyn = parseFloat(s2Cyan.value);
 
-    const D = [
-      [1.0, amb, 0.2],
-      [0.0, cyn, 0.8]
-    ];
-
+    const D = [[1.0, amb, 0.2], [0.0, cyn, 0.8]];
     const CD = [[0,0,0],[0,0,0],[0,0,0]];
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
-        for (let k = 0; k < 2; k++) {
-          CD[i][j] += C_base[i][k] * D[k][j];
-        }
+        for (let k = 0; k < 2; k++) CD[i][j] += C_base[i][k] * D[k][j];
       }
     }
 
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 220);
     if (!inst) return;
     const { ctx, width, height } = inst;
     ctx.clearRect(0, 0, width, height);
 
-    const boxW = width / 3.8;
-    const boxH = height * 0.55;
-    const titles = ['Swatch 1: Pure Amber', 'Swatch 2: Blended Recipe', 'Swatch 3: Cyan Rich'];
+    const boxW = Math.min(140, width / 4);
+    const boxH = 110;
+    const titles = ['Swatch 1: Amber', 'Swatch 2: Blended', 'Swatch 3: Cyan'];
 
     for (let col = 0; col < 3; col++) {
       const r = Math.min(1.0, Math.max(0, CD[0][col]));
@@ -1641,7 +1715,7 @@ function initLightBlendingSim() {
       const b = Math.min(1.0, Math.max(0, CD[2][col]));
 
       const hex = `rgb(${Math.round(r*255)}, ${Math.round(g*255)}, ${Math.round(b*255)})`;
-      const x = 20 + col * (boxW + 20);
+      const x = 30 + col * (boxW + 30);
       const y = 30;
 
       ctx.fillStyle = hex;
@@ -1654,10 +1728,10 @@ function initLightBlendingSim() {
       ctx.font = 'bold 11px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(titles[col], x + boxW / 2, y + boxH + 20);
-      ctx.fillText(`RGB: [${r.toFixed(2)}, ${g.toFixed(2)}, ${b.toFixed(2)}]ᵀ`, x + boxW / 2, y + boxH + 36);
+      ctx.fillText(`[${r.toFixed(2)}, ${g.toFixed(2)}, ${b.toFixed(2)}]ᵀ`, x + boxW / 2, y + boxH + 36);
     }
 
-    if (status) status.innerHTML = `Swatch 2 blended with Amber = ${amb.toFixed(1)}, Cyan = ${cyn.toFixed(1)}. Matrix multiplication computes the new lighting spectrum!`;
+    if (status) status.innerHTML = `Swatch 2 blended with Amber = ${amb.toFixed(1)}, Cyan = ${cyn.toFixed(1)}.`;
   }
 
   s2Amber.addEventListener('input', render);
@@ -1668,7 +1742,6 @@ function initLightBlendingSim() {
 
 /* ==========================================================================
    SIMULATION 15: 8x8 MATRIX PIXEL SHIFTER (Cell 58)
-   P(up) * X * Q(left)
    ========================================================================== */
 function initPixelShifterSim() {
   const upSlider = document.getElementById('pixel-shift-up');
@@ -1681,37 +1754,28 @@ function initPixelShifterSim() {
     const kUp = parseInt(upSlider.value);
     const kLeft = parseInt(leftSlider.value);
 
-    // Initial 8x8 with 4x4 block
     const X = Array(8).fill(0).map(() => Array(8).fill(0));
     for (let r = 2; r < 6; r++) {
-      for (let c = 2; c < 6; c++) {
-        X[r][c] = 1;
-      }
+      for (let c = 2; c < 6; c++) X[r][c] = 1;
     }
 
-    // Shift Up by kUp (Row r <- Row r + kUp)
     const shiftedRow = Array(8).fill(0).map(() => Array(8).fill(0));
     for (let r = 0; r < 8 - kUp; r++) {
-      for (let c = 0; c < 8; c++) {
-        shiftedRow[r][c] = X[r + kUp][c];
-      }
+      for (let c = 0; c < 8; c++) shiftedRow[r][c] = X[r + kUp][c];
     }
 
-    // Shift Left by kLeft (Col c <- Col c + kLeft)
     const result = Array(8).fill(0).map(() => Array(8).fill(0));
     for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8 - kLeft; c++) {
-        result[r][c] = shiftedRow[r][c + kLeft];
-      }
+      for (let c = 0; c < 8 - kLeft; c++) result[r][c] = shiftedRow[r][c + kLeft];
     }
 
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 260);
     if (!inst) return;
     const { ctx, width, height } = inst;
     ctx.clearRect(0, 0, width, height);
 
-    const cellSize = Math.min((width - 40) / 8, (height - 40) / 8);
+    const cellSize = 26;
     const startX = (width - 8 * cellSize) / 2;
     const startY = (height - 8 * cellSize) / 2;
 
@@ -1736,7 +1800,7 @@ function initPixelShifterSim() {
 }
 
 /* ==========================================================================
-   SIMULATION 16: 2D VECTOR CANVAS WITH MAGNITUDE & ANGLE (Cell 68)
+   SIMULATION 16: 2D VECTOR CANVAS (Cell 68)
    ========================================================================== */
 function initVector2DSim() {
   const canvas = document.getElementById('vector2d-canvas');
@@ -1758,17 +1822,16 @@ function initVector2DSim() {
     const angleDeg = (angleRad * 180 / Math.PI + 360) % 360;
 
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 380);
     if (!inst) return;
     const { ctx, width, height } = inst;
-    const grid = drawCartesianGrid(ctx, width, height, -6, 6, -6, 6, theme);
+    const grid = drawSquareGrid(ctx, width, height, 5.5, theme);
 
     const startX = grid.toScreenX(tx);
     const startY = grid.toScreenY(ty);
     const endX = grid.toScreenX(tx + dx);
     const endY = grid.toScreenY(ty + dy);
 
-    // Dotted projection triangle
     ctx.strokeStyle = theme.textMuted;
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
@@ -1779,10 +1842,8 @@ function initVector2DSim() {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Vector arrow
     drawVector(ctx, startX, startY, endX, endY, theme.accent1, `v [${dx}, ${dy}]ᵀ`, 3.5);
 
-    // Angle Arc
     ctx.strokeStyle = theme.accent3;
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -1806,7 +1867,6 @@ function initVector2DSim() {
 
 /* ==========================================================================
    SIMULATION 17: VECTOR ADDITION (Cell 70)
-   Head-to-Tail vs Parallelogram
    ========================================================================== */
 function initVectorAddSim() {
   const canvas = document.getElementById('vector-add-canvas');
@@ -1819,7 +1879,7 @@ function initVectorAddSim() {
   const status = document.getElementById('vector-add-status');
   if (!canvas || !uxSlider) return;
 
-  let method = 'head-to-tail'; // 'head-to-tail' or 'parallelogram'
+  let method = 'head-to-tail';
 
   function render() {
     const ux = parseFloat(uxSlider.value);
@@ -1830,23 +1890,18 @@ function initVectorAddSim() {
     const ry = uy + vy;
 
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 380);
     if (!inst) return;
     const { ctx, width, height } = inst;
-    const grid = drawCartesianGrid(ctx, width, height, -6, 7, -6, 7, theme);
+    const grid = drawSquareGrid(ctx, width, height, 5.5, theme);
 
     if (method === 'head-to-tail') {
-      // u from origin
       drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(ux), grid.toScreenY(uy), theme.accent1, 'u', 3);
-      // v from head of u
       drawVector(ctx, grid.toScreenX(ux), grid.toScreenY(uy), grid.toScreenX(rx), grid.toScreenY(ry), theme.accent2, 'c·v', 3);
-      // resultant u + cv from origin
       drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(rx), grid.toScreenY(ry), theme.accent3, 'u + c·v', 3.5);
     } else {
-      // Parallelogram: both from origin
       drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(ux), grid.toScreenY(uy), theme.accent1, 'u', 3);
       drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(vx), grid.toScreenY(vy), theme.accent2, 'c·v', 3);
-      // Dotted sides
       ctx.strokeStyle = theme.grid;
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
@@ -1856,7 +1911,6 @@ function initVectorAddSim() {
       ctx.lineTo(grid.toScreenX(vx), grid.toScreenY(vy));
       ctx.stroke();
       ctx.setLineDash([]);
-      // Diagonal resultant
       drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(rx), grid.toScreenY(ry), theme.accent3, 'Resultant', 3.5);
     }
 
@@ -1881,7 +1935,6 @@ function initVectorAddSim() {
 
 /* ==========================================================================
    SIMULATION 18: VECTOR SPACE AXIOM TESTER (Cell 72)
-   Commutativity, Distributivity, Inverse
    ========================================================================== */
 function initAxiomTesterSim() {
   const sel = document.getElementById('axiom-select');
@@ -1906,31 +1959,26 @@ function initAxiomTesterSim() {
 
     if (type === 'comm') {
       title = "Commutativity of Vector Addition";
-      formulaL = "v + w";
-      formulaR = "w + v";
+      formulaL = "v + w"; formulaR = "w + v";
       lhs = [v[0] + w[0], v[1] + w[1]];
       rhs = [w[0] + v[0], w[1] + v[1]];
     } else if (type === 'dist_vec') {
       title = "Vector Distributivity: c(v + w) == cv + cw";
-      formulaL = "c(v + w)";
-      formulaR = "c·v + c·w";
+      formulaL = "c(v + w)"; formulaR = "c·v + c·w";
       lhs = [cVal * (v[0] + w[0]), cVal * (v[1] + w[1])];
       rhs = [cVal * v[0] + cVal * w[0], cVal * v[1] + cVal * w[1]];
     } else if (type === 'dist_scal') {
       title = "Scalar Distributivity: (c + d)v == cv + dv";
-      formulaL = "(c + d)v";
-      formulaR = "c·v + d·v";
+      formulaL = "(c + d)v"; formulaR = "c·v + d·v";
       lhs = [(cVal + dVal) * v[0], (cVal + dVal) * v[1]];
       rhs = [cVal * v[0] + dVal * v[0], cVal * v[1] + dVal * v[1]];
     } else {
       title = "Additive Inverse: v + (-v) == 0";
-      formulaL = "v + (-v)";
-      formulaR = "0 Vector";
+      formulaL = "v + (-v)"; formulaR = "0 Vector";
       lhs = [v[0] - v[0], v[1] - v[1]];
       rhs = [0, 0];
     }
 
-    const isMatch = Math.abs(lhs[0] - rhs[0]) < 1e-4 && Math.abs(lhs[1] - rhs[1]) < 1e-4;
     if (card) {
       card.innerHTML = `
         <div style="font-size:14px; font-weight:700; color:#10b981; margin-bottom:8px;">✓ AXIOM HOLDS: ${title}</div>
@@ -1949,7 +1997,6 @@ function initAxiomTesterSim() {
 
 /* ==========================================================================
    SIMULATION 19: 2D CONTINUOUS SPAN SYNTHESIZER (Cell 75)
-   Linear combination grid of v and w
    ========================================================================== */
 function initSpan2DSim() {
   const canvas = document.getElementById('span2d-canvas');
@@ -1970,12 +2017,11 @@ function initSpan2DSim() {
     const valC2 = parseFloat(c2.value);
 
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 380);
     if (!inst) return;
     const { ctx, width, height } = inst;
-    const grid = drawCartesianGrid(ctx, width, height, -6, 6, -6, 6, theme);
+    const grid = drawSquareGrid(ctx, width, height, 5, theme);
 
-    // Draw coordinate lattice of span {c1*v + c2*w}
     ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
     ctx.lineWidth = 1;
     for (let i = -4; i <= 4; i++) {
@@ -1990,16 +2036,13 @@ function initSpan2DSim() {
       ctx.stroke();
     }
 
-    // Vectors v and w
     drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(v[0]), grid.toScreenY(v[1]), theme.accent1, 'v', 2.5);
     drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(w[0]), grid.toScreenY(w[1]), theme.accent2, 'w', 2.5);
 
-    // Current point c1*v + c2*w
     const curX = valC1 * v[0] + valC2 * w[0];
     const curY = valC1 * v[1] + valC2 * w[1];
     drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(curX), grid.toScreenY(curY), theme.accent4, `p [${curX.toFixed(1)}, ${curY.toFixed(1)}]ᵀ`, 3.5);
 
-    // Determinant / Collinearity check
     const det = v[0] * w[1] - v[1] * w[0];
     const isCollinear = Math.abs(det) < 0.05;
     if (status) {
@@ -2028,7 +2071,6 @@ function initSpan2DSim() {
 
 /* ==========================================================================
    SIMULATION 20: 3D SUBSPACE SPAN EXPLORER (Cell 77)
-   Plotly 3D vector arrows & span plane/line
    ========================================================================== */
 function initSpan3DSim() {
   const container = document.getElementById('plotly-3d-span');
@@ -2065,11 +2107,8 @@ function initSpan3DSim() {
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
 
     const data = [
-      // Origin marker
       { type: 'scatter3d', mode: 'markers', x: [0], y: [0], z: [0], marker: { size: 5, color: '#94a3b8' }, name: 'Origin' },
-      // Vector u
       { type: 'scatter3d', mode: 'lines+markers', x: [0, c.u[0]], y: [0, c.u[1]], z: [0, c.u[2]], line: { width: 6, color: '#6366f1' }, name: 'Vector u' },
-      // Vector v
       { type: 'scatter3d', mode: 'lines+markers', x: [0, c.v[0]], y: [0, c.v[1]], z: [0, c.v[2]], line: { width: 6, color: '#10b981' }, name: 'Vector v' }
     ];
 
@@ -2081,7 +2120,7 @@ function initSpan3DSim() {
 
     const layout = {
       margin: { l: 0, r: 0, b: 0, t: 20 },
-      paper_bgcolor: isLight ? '#f8fafc' : '#111827',
+      paper_bgcolor: isLight ? '#ffffff' : '#0f172a',
       scene: {
         camera: { eye: { x: 1.6, y: -1.6, z: 1.2 } },
         xaxis: { title: 'X', range: [-5, 5] },
@@ -2100,7 +2139,6 @@ function initSpan3DSim() {
 
 /* ==========================================================================
    SIMULATION 21: COLUMN COMBINATION TARGET RECONSTRUCTOR (Cell 79)
-   col1 = [2, 1], col2 = [1, -1], target = [7, 2] => x = 3, y = 1
    ========================================================================== */
 function initColumnReconSim() {
   const canvas = document.getElementById('recon-canvas');
@@ -2123,20 +2161,17 @@ function initColumnReconSim() {
     const isSolved = dist < 0.08;
 
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 380);
     if (!inst) return;
     const { ctx, width, height } = inst;
-    const grid = drawCartesianGrid(ctx, width, height, -2, 9, -3, 6, theme);
+    const grid = drawSquareGrid(ctx, width, height, 4.5, theme);
 
-    // Target b
     drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(target[0]), grid.toScreenY(target[1]), theme.accent4, 'Target b [7, 2]ᵀ', 3.5);
 
-    // x * col1
     const p1x = x * col1[0];
     const p1y = x * col1[1];
     drawVector(ctx, grid.originX, grid.originY, grid.toScreenX(p1x), grid.toScreenY(p1y), theme.accent1, `x·col₁`, 2.5);
 
-    // y * col2 head to tail
     drawVector(ctx, grid.toScreenX(p1x), grid.toScreenY(p1y), grid.toScreenX(cur[0]), grid.toScreenY(cur[1]), theme.accent2, `+ y·col₂`, 2.5);
 
     if (isSolved) {
@@ -2145,7 +2180,7 @@ function initColumnReconSim() {
       }
     } else {
       if (status) {
-        status.innerHTML = `Current: [${cur[0].toFixed(2)}, ${cur[1].toFixed(2)}]ᵀ | Distance: <strong>${dist.toFixed(2)}</strong> (Adjust x and y to reach target!)`;
+        status.innerHTML = `Current: [${cur[0].toFixed(2)}, ${cur[1].toFixed(2)}]ᵀ | Distance: <strong>${dist.toFixed(2)}</strong> (Target: [7, 2]ᵀ)`;
       }
     }
   }
@@ -2174,12 +2209,11 @@ function init5x5SystemSim() {
 
   function render() {
     const theme = getThemeColors();
-    const inst = setupCanvas(canvas);
+    const inst = setupCanvas(canvas, 240);
     if (!inst) return;
     const { ctx, width, height } = inst;
     ctx.clearRect(0, 0, width, height);
 
-    // 5x5 columns: each weight is 1.00
     const weights = [1.0, 1.0, 1.0, 1.0, 1.0];
     const labels = ['x₁ (Col 1)', 'x₂ (Col 2)', 'x₃ (Col 3)', 'x₄ (Col 4)', 'x₅ (Col 5)'];
     const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
@@ -2212,18 +2246,20 @@ function init5x5SystemSim() {
 
 /* ==========================================================================
    SIMULATION 23: SUBSPACE SPAN DETECTIVE GAME (Cell 84)
-   3 Challenge Levels with Scoring
    ========================================================================== */
 function initDetectiveGameSim() {
+  const canvas = document.getElementById('game-canvas');
   const sel = document.getElementById('game-level-select');
   const dial1 = document.getElementById('game-dial1');
   const dial2 = document.getElementById('game-dial2');
   const dial1Val = document.getElementById('game-dial1-val');
   const dial2Val = document.getElementById('game-dial2-val');
+  const dial1Label = document.getElementById('game-dial1-label');
+  const dial2Label = document.getElementById('game-dial2-label');
   const btn = document.getElementById('game-test-btn');
   const status = document.getElementById('game-status');
   const scoreBadge = document.getElementById('game-score-badge');
-  if (!sel || !dial1) return;
+  if (!sel || !dial1 || !canvas) return;
 
   let currentScore = 0;
 
@@ -2234,25 +2270,189 @@ function initDetectiveGameSim() {
     if (dial1Val) dial1Val.textContent = v1.toFixed(2);
     if (dial2Val) dial2Val.textContent = v2.toFixed(2);
 
+    const theme = getThemeColors();
+    const inst = setupCanvas(canvas, 340);
+    if (!inst) return;
+    const { ctx, width, height } = inst;
+    ctx.clearRect(0, 0, width, height);
+
     if (lvl === 'color') {
-      // Base 1: [1, 0.2, 0], Base 2: [0, 0.8, 1.0] -> Target: 0.6*B1 + 0.5*B2
-      const dist = Math.sqrt(Math.pow(v1 - 0.6, 2) + Math.pow(v2 - 0.5, 2));
-      if (dist < 0.08) {
-        if (status) status.innerHTML = `<span style="color:#10b981;">🎉 <strong>COLOR MATCHED!</strong></span> Perfect ratio (x₁ = 0.60, x₂ = 0.50)!`;
+      // LEVEL 1: RGB STAGE LIGHT ALCHEMIST
+      if (dial1Label) dial1Label.textContent = 'Amber Beam (x₁):';
+      if (dial2Label) dial2Label.textContent = 'Cyan Beam (x₂):';
+
+      // Basis Light Vectors
+      const u = [1.0, 0.65, 0.1]; // Amber
+      const v = [0.1, 0.75, 1.0]; // Cyan
+      const target = [0.65, 0.82, 0.56]; // Target goal color (lime sage)
+
+      // Synthesized color: clamp to [0, 1]
+      const rMix = Math.min(1.0, v1 * u[0] + v2 * v[0]);
+      const gMix = Math.min(1.0, v1 * u[1] + v2 * v[1]);
+      const bMix = Math.min(1.0, v1 * u[2] + v2 * v[2]);
+
+      const dist = Math.sqrt(Math.pow(rMix - target[0], 2) + Math.pow(gMix - target[1], 2) + Math.pow(bMix - target[2], 2));
+
+      // Draw Emitters on Left
+      const lampY1 = 80;
+      const lampY2 = height - 80;
+      ctx.fillStyle = `rgb(${Math.round(u[0]*255)}, ${Math.round(u[1]*255)}, ${Math.round(u[2]*255)})`;
+      ctx.beginPath(); ctx.arc(60, lampY1, 24, 0, Math.PI * 2); ctx.fill();
+      ctx.font = 'bold 11px Inter, sans-serif'; ctx.fillStyle = theme.text; ctx.textAlign = 'center';
+      ctx.fillText('Amber Beam u', 60, lampY1 + 38);
+
+      ctx.fillStyle = `rgb(${Math.round(v[0]*255)}, ${Math.round(v[1]*255)}, ${Math.round(v[2]*255)})`;
+      ctx.beginPath(); ctx.arc(60, lampY2, 24, 0, Math.PI * 2); ctx.fill();
+      ctx.fillText('Cyan Beam v', 60, lampY2 + 38);
+
+      // Light Cones towards center
+      const centerX = width * 0.42;
+      const centerY = height / 2;
+      const grad1 = ctx.createRadialGradient(60, lampY1, 5, centerX, centerY, 180);
+      grad1.addColorStop(0, `rgba(245, 158, 11, ${v1 * 0.5})`);
+      grad1.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad1;
+      ctx.beginPath(); ctx.moveTo(60, lampY1); ctx.lineTo(centerX + 40, centerY - 50); ctx.lineTo(centerX + 40, centerY + 50); ctx.fill();
+
+      // Synthesized Mixed Stage Circle
+      ctx.fillStyle = `rgb(${Math.round(rMix*255)}, ${Math.round(gMix*255)}, ${Math.round(bMix*255)})`;
+      ctx.beginPath(); ctx.arc(centerX, centerY, 52, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.stroke();
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 12px Inter, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('Mixed Stage Spot', centerX, centerY + 72);
+
+      // Target Swatch on Right
+      const targetX = width * 0.78;
+      ctx.fillStyle = `rgb(${Math.round(target[0]*255)}, ${Math.round(target[1]*255)}, ${Math.round(target[2]*255)})`;
+      ctx.beginPath(); ctx.arc(targetX, centerY, 52, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = theme.accent3; ctx.lineWidth = 3; ctx.stroke();
+      ctx.fillStyle = theme.text;
+      ctx.fillText('🎯 Goal Target', targetX, centerY + 72);
+
+      // Distance Bar
+      const meterW = 160;
+      const meterX = width / 2 - meterW / 2;
+      ctx.fillStyle = theme.isLight ? '#e2e8f0' : 'rgba(255,255,255,0.1)';
+      ctx.fillRect(meterX, height - 34, meterW, 8);
+      const matchPct = Math.max(0, 1 - dist / 0.8);
+      ctx.fillStyle = dist < 0.1 ? '#10b981' : '#f59e0b';
+      ctx.fillRect(meterX, height - 34, meterW * matchPct, 8);
+      ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Color Match: ${(matchPct * 100).toFixed(0)}% (Distance: ${dist.toFixed(2)})`, width / 2, height - 16);
+
+      if (dist < 0.1) {
+        if (status) status.innerHTML = `<span style="color:#10b981;">🎉 <strong>PERFECT COLOR MATCH!</strong></span> Ratio calibrated (x₁ = ${v1.toFixed(2)}, x₂ = ${v2.toFixed(2)})! Target is inside the span!`;
       } else {
-        if (status) status.innerHTML = `Target: Amber-Cyan mix. Distance to target: <strong>${dist.toFixed(2)}</strong>`;
+        if (status) status.innerHTML = `Adjust Amber and Cyan dials to hit the lime-sage target. Current color distance: <strong>${dist.toFixed(2)}</strong>`;
       }
+
     } else if (lvl === 'drone') {
-      // u: [2, 1], v: [-1, 2], Target: [3, 4] -> Solvable by 2*u + 1*v
-      const dist = Math.sqrt(Math.pow(v1 - 2.0, 2) + Math.pow(v2 - 1.0, 2));
-      if (dist < 0.08) {
-        if (status) status.innerHTML = `<span style="color:#10b981;">🚀 <strong>WAYPOINT REACHED!</strong></span> Drone thrusters calibrated (u = 2.0, v = 1.0)!`;
+      // LEVEL 2: 2D DRONE FLIGHT NAVIGATION (HEAD-TO-TAIL)
+      if (dial1Label) dial1Label.textContent = 'Thruster 1 (x₁):';
+      if (dial2Label) dial2Label.textContent = 'Thruster 2 (x₂):';
+
+      // 2D Radar Grid
+      const originX = width * 0.25;
+      const originY = height * 0.75;
+      const scale = 36;
+      const toX = (x) => originX + x * scale;
+      const toY = (y) => originY - y * scale;
+
+      // Draw Grid
+      ctx.strokeStyle = theme.grid; ctx.lineWidth = 1;
+      for (let x = 0; x <= 6; x++) { ctx.beginPath(); ctx.moveTo(toX(x), 20); ctx.lineTo(toX(x), height - 20); ctx.stroke(); }
+      for (let y = 0; y <= 6; y++) { ctx.beginPath(); ctx.moveTo(originX - 20, toY(y)); ctx.lineTo(width - 30, toY(y)); ctx.stroke(); }
+
+      // Basis Vectors: u = [1, 1], v = [1, 2]
+      // Target Waypoint: [3, 4] -> Solution: 2*u + 1*v = [3, 4]
+      const tx = 3.0; const ty = 4.0;
+      const droneX = v1 * 1.0 + v2 * 1.0;
+      const droneY = v1 * 1.0 + v2 * 2.0;
+
+      // Target Bullseye
+      ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(toX(tx), toY(ty), 14, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(toX(tx), toY(ty), 6, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#ef4444'; ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('🎯 Waypoint [3, 4]ᵀ', toX(tx) + 18, toY(ty) + 4);
+
+      // Vector 1 (Indigo from Origin)
+      const u1x = v1 * 1.0; const u1y = v1 * 1.0;
+      drawVector(ctx, originX, originY, toX(u1x), toY(u1y), theme.accent1, 'x₁·u [1,1]', 3);
+
+      // Vector 2 (Emerald Head-to-Tail from tip of u)
+      drawVector(ctx, toX(u1x), toY(u1y), toX(droneX), toY(droneY), theme.accent2, 'x₂·v [1,2]', 3);
+
+      // Drone Craft at Result Tip
+      ctx.font = '24px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('🛸', toX(droneX), toY(droneY));
+
+      const dist = Math.sqrt(Math.pow(droneX - tx, 2) + Math.pow(droneY - ty, 2));
+      if (dist < 0.18) {
+        if (status) status.innerHTML = `<span style="color:#10b981;">🚀 <strong>WAYPOINT REACHED!</strong></span> Perfect flight solution: 2[1,1]ᵀ + 1[1,2]ᵀ = [3,4]ᵀ!`;
       } else {
-        if (status) status.innerHTML = `Target Waypoint: [3, 4]ᵀ. Distance: <strong>${dist.toFixed(2)}</strong>`;
+        if (status) status.innerHTML = `Current Drone Position: [${droneX.toFixed(2)}, ${droneY.toFixed(2)}]ᵀ. Distance to target: <strong>${dist.toFixed(2)}</strong>`;
       }
+
     } else {
-      // Subspace 3D check
-      if (status) status.innerHTML = `Is target vector [2, 2, 4]ᵀ reachable by Span([2, 0, 1]ᵀ, [0, 2, 1]ᵀ)? <strong>Hint:</strong> 1·u + 1·v gives height 2, but target requires height 4! (UNSOLVABLE: Outside Span!)`;
+      // LEVEL 3: 3D SUBSPACE SPAN DETECTIVE (PLANE VS OFF-PLANE TARGET)
+      if (dial1Label) dial1Label.textContent = 'Plane Weight 1 (x₁):';
+      if (dial2Label) dial2Label.textContent = 'Plane Weight 2 (x₂):';
+
+      // Isometric 3D Projection
+      const ox = width * 0.45;
+      const oy = height * 0.65;
+      // 3D to 2D projection
+      const proj = (x, y, z) => ({
+        px: ox + (x - y) * 28,
+        py: oy + (x + y) * 14 - z * 32
+      });
+
+      // Draw 2D Subspace Plane Sheet (Translucent Parallelogram)
+      // Basis: u = [2, 0, 1], v = [0, 2, 1]
+      const p0 = proj(0, 0, 0);
+      const p1 = proj(3*2, 0, 3*1);
+      const p2 = proj(3*2, 3*2, 3*1 + 3*1);
+      const p3 = proj(0, 3*2, 3*1);
+
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.18)';
+      ctx.beginPath();
+      ctx.moveTo(p0.px, p0.py); ctx.lineTo(p1.px, p1.py); ctx.lineTo(p2.px, p2.py); ctx.lineTo(p3.px, p3.py);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 1.5; ctx.stroke();
+
+      // Origin
+      ctx.fillStyle = theme.text; ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText('(0,0,0)', p0.px - 6, p0.py);
+
+      // Synthesized Vector on the Plane: x1*u + x2*v
+      const curX = v1 * 2; const curY = v2 * 2; const curZ = v1 * 1 + v2 * 1;
+      const curP = proj(curX, curY, curZ);
+
+      // Draw synthesis vector
+      drawVector(ctx, p0.px, p0.py, curP.px, curP.py, theme.accent2, 'Synthesized Vector on Plane', 3);
+
+      // Target Vector b = [2, 2, 4]
+      const tbP = proj(2, 2, 4);
+      // Projection of target ON plane is [2, 2, 2]
+      const tbOnPlane = proj(2, 2, 2);
+
+      // Dashed vertical altitude drop line
+      ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(tbOnPlane.px, tbOnPlane.py); ctx.lineTo(tbP.px, tbP.py); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Target Vector Arrow
+      drawVector(ctx, p0.px, p0.py, tbP.px, tbP.py, '#ef4444', 'Target b [2, 2, 4]ᵀ', 3);
+
+      // Altitude label
+      ctx.fillStyle = '#ef4444'; ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('Altitude h = 2.0 (Off-Plane!)', tbP.px + 10, (tbP.py + tbOnPlane.py)/2);
+
+      if (status) {
+        status.innerHTML = `<span style="color:#ef4444;">🚨 <strong>TARGET LIES OUTSIDE SUBSPACE!</strong></span> Target vector [2, 2, 4]ᵀ hovers 2 units above the plane sheet (which requires z = (x+y)/2 = 2). No combination of basis vectors can ever leave the plane! Therefore, <strong>b ∉ Span(u, v)</strong>.`;
+      }
     }
   }
 
@@ -2267,14 +2467,15 @@ function initDetectiveGameSim() {
   sel.onchange = render;
   dial1.addEventListener('input', render);
   dial2.addEventListener('input', render);
+  window.addEventListener('resize', render);
   render();
 }
 
-/* ==========================================================================
+/* =/* ==========================================================================
    GLOBAL INITIALIZATION ENTRYPOINT
    ========================================================================== */
 function initAllSimulations() {
-  console.log("Initializing all Linear Algebra simulations...");
+  console.log("Initializing all Linear Algebra simulations with fixed heights & true aspect ratios...");
   initCurveSim();
   initLineSolverSim();
   initTrichotomySim();

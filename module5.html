@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module 5: Matrix Factorization &amp; LU Decomposition · M3 Interactive Lab</title>
+  <!-- KaTeX Typography (Global High-Speed CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="m5">
+
+  <div class="layout">
+    <!-- Sticky Table of Contents (Populated by core.js) -->
+    <aside class="toc" id="toc"></aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+
+      <!-- Module Hero -->
+      <header class="module-hero">
+        <span class="eyebrow">MODULE 05 · MATRIX FACTORIZATION &amp; ALGORITHMIC ARCHITECTURE</span>
+        <h1>Matrix Factorization &amp; $LU$ Decomposition</h1>
+        <p>Encode elementary row operations as matrix multiplications. Discover the inverse "Undo" engine, why multipliers assemble with zero crosstalk, and how $A = LU$ decomposes linear systems into two lightning-fast triangular solves.</p>
+        <div class="hero-goals">
+          <div>🎯 <b>Elementary Matrices $E_{ij}$:</b> Encoding elimination as matrix multiplication on the left.</div>
+          <div>🎯 <b>The Inverse "Undo" Operator:</b> Inverting elimination steps by simply flipping the sign of the multiplier.</div>
+          <div>🎯 <b>$A = LU$ Decomposition:</b> Assembling Lower Triangular $L$ and Upper Triangular $U$ with zero crosstalk.</div>
+        </div>
+      </header>
+
+      <!-- Section 1 -->
+      <section class="chapter" id="sec-1" data-title="Why Factor Matrices?">
+        <h2><span class="num">1</span> Why Factor Matrices? Storing Elimination History</h2>
+        <p>When you solve $A\mathbf{x} = \mathbf{b}$ by hand, Gaussian Elimination overwrites the original numbers in $A$ until it becomes upper triangular $U$. But what if tomorrow you are given a <i>new</i> target vector $\mathbf{b}_{\text{new}}$ with the exact same coefficient matrix $A$? Re-running the entire $O(n^3)$ elimination from scratch is computationally wasteful.</p>
+
+        <div class="callout def">
+          <div class="callout-title">The Philosophy of Factorization</div>
+          <p>Matrix factorization decomposes a single complicated matrix $A$ into a product of simpler structured matrices (such as triangular matrices):
+            $$A = L \cdot U$$
+            • <b>$L$ (Lower Triangular):</b> Records the history of every elimination step and multiplier ($L_{ii} = 1$).<br>
+            • <b>$U$ (Upper Triangular):</b> The final echelon form holding the pivots on its diagonal.<br>
+            Once factored, solving for any new right-hand side takes only $O(n^2)$ back- and forward-substitutions!
+          </p>
+        </div>
+
+        <div class="callout ponder" data-ponder="m5-p1">
+          <div class="callout-title">🤔 Stop &amp; Ponder: Why do we multiply on the Left for Row Operations?</div>
+          <p>Recall from Module 2 that multiplying a matrix on the left combines rows, while multiplying on the right combines columns. To perform an elementary row operation on $A$, which side must our elementary matrix $E$ act on?</p>
+          <div class="reveal" data-label="See Linear Action">
+            <div class="reveal-label">Left Action on Rows</div>
+            <p>Every row of the product $EA$ is a linear combination of the rows of $A$. Hence, row operations are strictly <b>pre-multiplications</b> ($E \cdot A$).</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2 -->
+      <section class="chapter" id="sec-2" data-title="Elementary Matrix E_ij &amp; The Undo Engine">
+        <h2><span class="num">2</span> The Elementary Matrix $E_{ij}$ &amp; The Inverse Undo Engine</h2>
+        <p>An <b>Elementary Matrix</b> $E$ is obtained by applying a single Elementary Row Operation to the Identity Matrix $I$.</p>
+
+        <div class="callout theorem">
+          <div class="callout-title">Theorem 5.1: The Elimination Matrix Structure</div>
+          <p>To subtract $m_{ji}$ times Row $i$ from Row $j$, the elementary matrix $E_{ji}$ has:
+            $$E_{ji} = I \text{ with entry } (j, i) = -m_{ji}$$
+            Its inverse $E_{ji}^{-1}$, which <i>undoes</i> the subtraction by adding $m_{ji}$ times Row $i$ back, is simply:
+            $$E_{ji}^{-1} = I \text{ with entry } (j, i) = +m_{ji}$$
+          </p>
+        </div>
+
+        <!-- Pre-Context for Lab 5.1 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore &amp; Predict Before Interacting (Notebook 2 Cell 31)</span>
+          </div>
+          <p>• <b>Predict:</b> When you set multiplier $k = 2.0$, what number appears at entry $(2, 1)$ in $E$, and what appears at entry $(2, 1)$ in $E^{-1}$?</p>
+          <p>• <b>Action:</b> Switch between Elimination, Scaling, and Row Swap. Watch how $E \cdot A$ executes the row operation, and how $E^{-1} \cdot (EA)$ perfectly recovers the original matrix $A$.</p>
+        </div>
+
+        <!-- Interactive Lab 5.1 -->
+        <div id="lab-elementary-factory"></div>
+
+        <!-- Post-Context for Lab 5.1 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Reversibility Built-in:</b> Because every legal row operation is reversible, every elementary matrix $E$ is strictly invertible ($E^{-1}$ always exists).</p>
+          <p>• <b>Sign Reversal:</b> The inverse of an elimination matrix $E_{ji}$ flips the sign of the off-diagonal entry from $-m_{ji}$ to $+m_{ji}$.</p>
+        </div>
+      </section>
+
+      <!-- Section 3 -->
+      <section class="chapter" id="sec-3" data-title="Mini-Game: Matrix Codebreaker">
+        <h2><span class="num">3</span> Mini-Game: Reverse Engineer the Hidden Operator</h2>
+        <p>Can you work backwards from the transformed output to deduce the hidden elementary matrix?</p>
+
+        <!-- Pre-Context for Lab 5.2 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 Game Challenge: Matrix Codebreaker (Notebook 2 Cell 33)</span>
+          </div>
+          <p>• <b>Compare Rows:</b> Look closely at Initial Matrix $A$ and Secret Mystery Target $B$. Identify which row changed!</p>
+          <p>• <b>Find the Multiplier:</b> Adjust Target Row, Source Row, and Multiplier $k$ until your guess $EA$ exactly matches $B$.</p>
+        </div>
+
+        <!-- Interactive Lab 5.2 -->
+        <div id="lab-codebreaker-game"></div>
+
+        <!-- Post-Context for Lab 5.2 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• <b>Row Inspection Technique:</b> Unchanged rows tell you which rows served as sources. The changed row identifies the target row. The ratio of differences gives the exact multiplier $k$.</p>
+        </div>
+      </section>
+
+      <!-- Section 4 -->
+      <section class="chapter" id="sec-4" data-title="LU Decomposition: A = LU">
+        <h2><span class="num">4</span> The $A = LU$ Decomposition: Zero Crosstalk</h2>
+        <p>During Gaussian Elimination, we apply a sequence of elimination matrices to reduce $A$ to upper triangular $U$:</p>
+        $$E_{32} E_{31} E_{21} A = U$$
+        <p>Multiplying by their inverses in reverse order moves all elimination steps to the other side:</p>
+        $$A = (E_{21}^{-1} E_{31}^{-1} E_{32}^{-1}) U = L \cdot U$$
+
+        <div class="callout tip">
+          <div class="callout-title">The Miracle of Zero Crosstalk in L</div>
+          <p>When multiplying $E$'s together ($E_{32} E_{31} E_{21}$), earlier operations interfere with subsequent rows (multiplier crosstalk). But in the inverse product:
+            $$L = E_{21}^{-1} E_{31}^{-1} E_{32}^{-1} = \begin{bmatrix} 1 & 0 & 0 \\ l_{21} & 1 & 0 \\ l_{31} & l_{32} & 1 \end{bmatrix}$$
+            Every multiplier $l_{ji}$ drops directly into position $(j, i)$ with zero distortion!
+          </p>
+        </div>
+
+        <!-- Pre-Context for Lab 5.3 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore: 2×2 LU Sandbox (Notebook 2 Cell 37)</span>
+          </div>
+          <p>• Adjust entry $a$ (pivot 1) and entry $c$. Observe how $l_{21} = c/a$ is stored in $L$, while the new pivot $u_{22} = d - (c/a)b$ appears in $U$.</p>
+          <p>• <b>What happens if $a = 0$?</b> Notice how zero pivot prevents standard $LU$ without row swap.</p>
+        </div>
+
+        <!-- Interactive Lab 5.3 -->
+        <div id="lab-2x2-lu"></div>
+
+        <!-- Post-Context for Lab 5.3 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• For any $2 \times 2$ matrix with $a \neq 0$:
+            $$L = \begin{bmatrix} 1 & 0 \\ c/a & 1 \end{bmatrix}, \quad U = \begin{bmatrix} a & b \\ 0 & d - (c/a)b \end{bmatrix}$$
+            Multiplying $L \cdot U$ reconstructs entry-by-entry the original matrix $A$.
+          </p>
+        </div>
+
+        <p style="margin-top: 35px;">Now explore full $3 \times 3$ element-by-element $LU$ decomposition builder:</p>
+
+        <!-- Pre-Context for Lab 5.4 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 What to Explore: 3×3 LU Multiplier Assembly (Notebook 2 Cell 40)</span>
+          </div>
+          <p>• Switch across matrix presets. Observe how all three multipliers $l_{21}, l_{31}, l_{32}$ drop cleanly into their lower triangular slots in $L$.</p>
+        </div>
+
+        <!-- Interactive Lab 5.4 -->
+        <div id="lab-3x3-lu-builder"></div>
+
+        <!-- Post-Context for Lab 5.4 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Core Geometric &amp; Algebraic Takeaway</span>
+          </div>
+          <p>• Matrix $L$ is strictly unit lower triangular ($1$s on the diagonal). Matrix $U$ is upper triangular holding the echelon pivots on its diagonal.</p>
+        </div>
+      </section>
+
+      <!-- Section 5 -->
+      <section class="chapter" id="sec-5" data-title="Python CodeLab">
+        <h2><span class="num">5</span> Interactive Python CodeLab: $LU$ Factorization</h2>
+        <p>Master the syntax for computing $A = LU$ in Python using SciPy and NumPy.</p>
+
+        <!-- Pre-Context for CodeLab 5.5 -->
+        <div class="lab-context before">
+          <div class="lab-context-header">
+            <span class="badge-context-explore">🎯 CodeLab Challenge</span>
+          </div>
+          <p>• Fill in the expected multiplier value in lower triangular matrix $L$ after factoring with <code>scipy.linalg.lu</code>.</p>
+        </div>
+
+        <!-- CodeLab 5.5 -->
+        <div id="lab-code-lu"></div>
+
+        <!-- Post-Context for CodeLab 5.5 -->
+        <div class="lab-context after">
+          <div class="lab-context-header">
+            <span class="badge-context-takeaway">💡 Python Implementation Takeaway</span>
+          </div>
+          <p>• SciPy's <code>scipy.linalg.lu(A)</code> returns <code>P, L, U</code> such that $A = P L U$. When no row swaps are required, permutation matrix $P = I$.</p>
+        </div>
+      </section>
+
+      <!-- Section 6 -->
+      <section class="chapter" id="sec-6" data-title="Module 5 Mastery &amp; Assignments">
+        <h2><span class="num">6</span> Module 5 Conceptual Mastery &amp; Assignments</h2>
+        <p>Test your intuition on elementary matrices, inverse operators, and triangular system solving.</p>
+
+        <!-- Self-Check Quiz -->
+        <div id="quiz-m5"></div>
+
+        <!-- Interactive Assignment MCQs -->
+        <div class="callout def" style="margin-top: 30px;">
+          <div class="callout-title">📝 Assignment Intuition &amp; Conceptual MCQs</div>
+          <p>Solidify your understanding of $LU$ decomposition and matrix inverses. Select your answer and get immediate step-by-step reasoning!</p>
+        </div>
+        <div id="assignment-quiz-m5"></div>
+
+        <!-- Pen & Paper Assignment Card -->
+        <div class="assign" style="margin-top: 30px;">
+          <h3>✍️ Pen-and-Paper Assignment &amp; Conceptual Analysis (Notebook 2 Cell 42)</h3>
+          <div class="q">
+            <h4>📝 Question 1: Finding L and U Manually</h4>
+            <div class="given">
+              A = \begin{bmatrix} 2 & 1 & 1 \\ 4 & -6 & 0 \\ -2 & 7 & 2 \end{bmatrix}
+            </div>
+            <ul>
+              <li><b>Task 1:</b> Find elementary matrices $E_{21}, E_{31}, E_{32}$ that reduce $A$ to upper triangular $U$.</li>
+              <li><b>Task 2:</b> Invert each elementary matrix and compute $L = E_{21}^{-1} E_{31}^{-1} E_{32}^{-1}$.</li>
+              <li><b>Task 3:</b> Verify by direct matrix multiplication that $L \cdot U = A$.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="end-badge">
+          <span>🎉 CONGRATULATIONS! MODULE 5 COMPLETED!</span>
+        </div>
+      </section>
+
+      <!-- Bottom Pager (Auto-populated by core.js) -->
+      <nav id="pager"></nav>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    Newton School of Technology · Course in Linear Algebra (Mathematics-3) · Interactive Companion Laboratory
+  </footer>
+
+  <!-- Scripts -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <script src="core.js"></script>
+  <script src="module5.js"></script>
+</body>
+</html>
